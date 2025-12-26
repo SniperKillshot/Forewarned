@@ -269,12 +269,44 @@ class LocalAlertManager:
         Args:
             state: Current alert state
         """
+        # Main local alert sensor
         await self.ha_client.set_state(
             'binary_sensor.forewarned_local_alert',
             'on' if state['active'] else 'off',
             {
                 'friendly_name': 'Forewarned Local Alert',
                 'alert_level': state['level'],
+                'reason': state['reason'],
+                'triggered_by': ', '.join(state['triggered_by']),
+                'timestamp': state['timestamp'],
+                'device_class': 'safety'
+            }
+        )
+        
+        # Individual level sensors for easier automation triggers
+        for level_name in ['advisory', 'watch', 'warning', 'emergency']:
+            entity_id = f'binary_sensor.forewarned_alert_{level_name}'
+            is_active = state['active'] and state['level'] == level_name
+            
+            await self.ha_client.set_state(
+                entity_id,
+                'on' if is_active else 'off',
+                {
+                    'friendly_name': f'Forewarned Alert - {level_name.capitalize()}',
+                    'reason': state['reason'] if is_active else '',
+                    'triggered_by': ', '.join(state['triggered_by']) if is_active else '',
+                    'timestamp': state['timestamp'] if is_active else None,
+                    'device_class': 'safety'
+                }
+            )
+        
+        # Alert level as a sensor (text state)
+        await self.ha_client.set_state(
+            'sensor.forewarned_alert_level',
+            state['level'],
+            {
+                'friendly_name': 'Forewarned Alert Level',
+                'active': state['active'],
                 'reason': state['reason'],
                 'triggered_by': ', '.join(state['triggered_by']),
                 'timestamp': state['timestamp']
