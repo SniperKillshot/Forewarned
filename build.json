@@ -1,5 +1,5 @@
 {
-  "image": "ghcr.io/home-assistant/aarch64-base-python:3.10-alpine3.16",
+  "image": "ghcr.io/home-assistant/aarch64-base-python:3.11",
   "name": "Forewarned",
   "description": "Weather alerting and EOC state monitoring with automated routine activation",
   "version": "1.0.0",

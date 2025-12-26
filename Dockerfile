@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/home-assistant/aarch64-base-python:3.10-alpine3.16
+ARG BUILD_FROM=ghcr.io/home-assistant/aarch64-base-python:3.11
 FROM ${BUILD_FROM}
 
 # Install Python and dependencies
