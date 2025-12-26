@@ -12,19 +12,17 @@ RUN apk add --no-cache \
     py3-requests \
     py3-flask
 
+# Remove externally-managed restriction (safe in Docker)
+RUN rm -f /usr/lib/python*/EXTERNALLY-MANAGED
+
 # Create app directory
 WORKDIR /app
 
 # Copy requirements first for better caching
 COPY requirements.txt .
 
-# Create virtual environment and install pip packages
-RUN python3 -m venv /opt/venv && \
-    . /opt/venv/bin/activate && \
-    pip install --no-cache-dir -r requirements.txt
-
-# Set PATH to use venv
-ENV PATH="/opt/venv/bin:$PATH"
+# Install remaining pip packages
+RUN pip3 install --no-cache-dir -r requirements.txt
 
 # Copy application files
 COPY . .
