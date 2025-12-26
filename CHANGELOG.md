@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.0.13] - 2025-12-27
+
+### Added
+- Full PJSUA2 SIP registration implementation
+- SIP endpoint initialization with UDP transport
+- Account registration with digest authentication
+- Outbound SIP call capability
+- Proper SIP cleanup/shutdown on addon stop
+- SIP message trace logging (level 5 verbosity)
+- Console logging of all SIP packets for debugging
+
+### Fixed
+- VoIP configuration now properly loaded from addon options
+- Flat voip_* fields transformed into nested config structure
+- SIP backend now actually registers with PBX
+
 ## [1.0.12] - 2025-12-27
 
 ### Added

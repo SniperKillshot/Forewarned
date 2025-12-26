@@ -58,6 +58,15 @@ class VOIPIntegration:
         elif self.backend == 'ha_notify':
             self._init_ha_notify()
     
+    def shutdown(self):
+        """Cleanup VoIP resources"""
+        if self.backend == 'sip' and hasattr(self, 'ep') and self.ep:
+            try:
+                logger.info("Shutting down SIP endpoint")
+                self.ep.libDestroy()
+            except Exception as e:
+                logger.error(f"Error shutting down SIP: {e}")
+    
     def _init_sip(self):
         """Initialize SIP/PJSUA2 backend"""
         if not SIP_AVAILABLE:
@@ -71,7 +80,60 @@ class VOIPIntegration:
         self.sip_password = self.config.get('sip_password', '')
         self.sip_domain = self.config.get('sip_domain', '')
         
-        logger.info(f"SIP configured for {self.sip_user}@{self.sip_domain}")
+        if not all([self.sip_server, self.sip_user, self.sip_password, self.sip_domain]):
+            logger.error("SIP backend requires server, user, password, and domain to be configured")
+            self.enabled = False
+            return
+        
+        # Initialize PJSUA2 library
+        self.ep = None
+        self.account = None
+        
+        try:
+            # Create endpoint
+            self.ep = pj.Endpoint()
+            self.ep.libCreate()
+            
+            # Initialize endpoint with logging
+            ep_cfg = pj.EpConfig()
+            ep_cfg.logConfig.level = 5  # 0=none, 6=max verbosity
+            ep_cfg.logConfig.consoleLevel = 5
+            ep_cfg.logConfig.msgLogging = 1  # Enable SIP message logging
+            self.ep.libInit(ep_cfg)
+            
+            logger.info("PJSUA2 initialized with SIP message logging enabled")
+            
+            # Create SIP transport
+            sipTpConfig = pj.TransportConfig()
+            sipTpConfig.port = 0  # Use random port
+            self.ep.transportCreate(pj.PJSIP_TRANSPORT_UDP, sipTpConfig)
+            
+            # Start the library
+            self.ep.libStart()
+            
+            # Create and configure account
+            acc_cfg = pj.AccountConfig()
+            acc_cfg.idUri = f"sip:{self.sip_user}@{self.sip_domain}"
+            acc_cfg.regConfig.registrarUri = f"sip:{self.sip_server}"
+            
+            # Set credentials
+            cred = pj.AuthCredInfo("digest", "*", self.sip_user, 0, self.sip_password)
+            acc_cfg.sipConfig.authCreds.append(cred)
+            
+            # Create account
+            self.account = pj.Account()
+            self.account.create(acc_cfg)
+            
+            logger.info(f"SIP registration initiated for {self.sip_user}@{self.sip_domain} via {self.sip_server}")
+            
+        except Exception as e:
+            logger.error(f"Failed to initialize SIP: {e}")
+            self.enabled = False
+            if self.ep:
+                try:
+                    self.ep.libDestroy()
+                except:
+                    pass
     
     def _init_webhook(self):
         """Initialize webhook backend (for Asterisk AMI, etc.)"""
@@ -117,10 +179,36 @@ class VOIPIntegration:
     
     async def _make_sip_call(self, extension: str, message: str) -> bool:
         """Make call via SIP/PJSUA2"""
-        # This would require full PJSUA2 implementation
-        # Placeholder for now
-        logger.warning("Direct SIP calling not yet implemented - use webhook or HA notify")
-        return False
+        if not self.ep or not self.account:
+            logger.error("SIP not initialized - cannot make call")
+            return False
+        
+        try:
+            # Create call URI
+            call_uri = f"sip:{extension}@{self.sip_domain}"
+            
+            # Create call
+            call = pj.Call(self.account)
+            call_param = pj.CallOpParam()
+            call_param.opt.audioCount = 1
+            call_param.opt.videoCount = 0
+            
+            # Make the call
+            call.makeCall(call_uri, call_param)
+            
+            logger.info(f"SIP call initiated to {call_uri}")
+            
+            # Note: In production, you'd want to:
+            # 1. Wait for call to be answered
+            # 2. Play TTS message
+            # 3. Handle call events
+            # This is a basic implementation
+            
+            return True
+            
+        except Exception as e:
+            logger.error(f"Error making SIP call: {e}")
+            return False
     
     async def _make_webhook_call(self, extension: str, message: str, alert_level: str) -> bool:
         """

@@ -138,6 +138,27 @@ def load_config():
             default_config['weather_api_key'] = os.getenv('WEATHER_API_KEY')
         if os.getenv('CHECK_INTERVAL'):
             default_config['check_interval'] = int(os.getenv('CHECK_INTERVAL'))
+        
+        # Build VoIP configuration from flat addon options
+        if any(key.startswith('voip_') for key in default_config.keys()):
+            default_config['voip'] = {
+                'enabled': default_config.get('voip_enabled', False),
+                'backend': default_config.get('voip_backend', 'webhook'),
+                'sip_server': default_config.get('voip_sip_server', ''),
+                'sip_user': default_config.get('voip_sip_user', ''),
+                'sip_password': default_config.get('voip_sip_password', ''),
+                'sip_domain': default_config.get('voip_sip_domain', ''),
+                'webhook_url': default_config.get('voip_webhook_url', ''),
+                'webhook_method': default_config.get('voip_webhook_method', 'POST'),
+                'webhook_auth': {
+                    'type': default_config.get('voip_webhook_auth_type', 'none'),
+                    'username': default_config.get('voip_webhook_username', ''),
+                    'password': default_config.get('voip_webhook_password', ''),
+                    'token': default_config.get('voip_webhook_token', '')
+                },
+                'alert_numbers': default_config.get('voip_alert_numbers', [])
+            }
+            logger.info(f"VoIP configuration loaded: enabled={default_config['voip']['enabled']}, backend={default_config['voip']['backend']}")
             
     except Exception as e:
         logger.error(f"Error loading configuration: {e}")
