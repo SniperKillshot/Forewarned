@@ -269,12 +269,12 @@ class LocalAlertManager:
         Args:
             state: Current alert state
         """
-        # Main local alert sensor
+        # Main local alert binary sensor (on/off)
         await self.ha_client.set_state(
             'binary_sensor.forewarned_local_alert',
             'on' if state['active'] else 'off',
             {
-                'friendly_name': 'Forewarned Local Alert',
+                'friendly_name': 'Forewarned Local Alert Active',
                 'alert_level': state['level'],
                 'reason': state['reason'],
                 'triggered_by': ', '.join(state['triggered_by']),
@@ -293,6 +293,7 @@ class LocalAlertManager:
                 'on' if is_active else 'off',
                 {
                     'friendly_name': f'Forewarned Alert - {level_name.capitalize()}',
+                    'icon': 'mdi:alert' if is_active else 'mdi:alert-outline',
                     'reason': state['reason'] if is_active else '',
                     'triggered_by': ', '.join(state['triggered_by']) if is_active else '',
                     'timestamp': state['timestamp'] if is_active else None,
@@ -300,18 +301,30 @@ class LocalAlertManager:
                 }
             )
         
-        # Alert level as a sensor (text state)
+        # Alert level as a sensor (text state) - USE THIS FOR AUTOMATIONS
         await self.ha_client.set_state(
             'sensor.forewarned_alert_level',
-            state['level'],
+            state['level'],  # State is the level itself: none, advisory, watch, warning, emergency
             {
                 'friendly_name': 'Forewarned Alert Level',
+                'icon': self._get_icon_for_level(state['level']),
                 'active': state['active'],
                 'reason': state['reason'],
                 'triggered_by': ', '.join(state['triggered_by']),
                 'timestamp': state['timestamp']
             }
         )
+    
+    def _get_icon_for_level(self, level: str) -> str:
+        """Get icon for alert level"""
+        icons = {
+            'none': 'mdi:shield-check',
+            'advisory': 'mdi:information',
+            'watch': 'mdi:alert-circle',
+            'warning': 'mdi:alert',
+            'emergency': 'mdi:alarm-light'
+        }
+        return icons.get(level, 'mdi:help-circle')
     
     async def _trigger_routines(self, new_state: Dict, old_state: Dict):
         """
