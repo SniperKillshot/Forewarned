@@ -48,6 +48,11 @@ def create_app():
         """Main dashboard"""
         return render_template('index.html')
     
+    @app.route('/favicon.ico')
+    def favicon():
+        """Serve favicon"""
+        return '', 204  # No content
+    
     @app.route('/api/status')
     def api_status():
         """Get current status"""
