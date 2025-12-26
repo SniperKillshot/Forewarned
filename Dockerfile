@@ -23,8 +23,8 @@ RUN python3 -m venv /app/venv
 COPY requirements.txt .
 
 # Install pip packages into venv (upgrade pip first)
-RUN /app/venv/bin/pip install --upgrade pip && \
-    /app/venv/bin/pip install --no-cache-dir -r requirements.txt
+RUN /app/venv/bin/pip install --break-system-packages --upgrade pip && \
+    /app/venv/bin/pip install --break-system-packages --no-cache-dir -r requirements.txt
 
 # Set environment to use venv
 ENV PATH="/app/venv/bin:$PATH"
