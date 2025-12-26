@@ -1,13 +1,7 @@
 """Weather monitoring and alerting"""
 import logging
 import asyncio
-try:
-    import aioftp
-    AIOFTP_AVAILABLE = True
-except ImportError:
-    AIOFTP_AVAILABLE = False
-    logger = logging.getLogger(__name__)
-    logger.warning("aioftp not available - weather monitoring via FTP disabled")
+import aiohttp
 from typing import Dict, List, Optional
 from datetime import datetime
 from lxml import etree
@@ -32,8 +26,7 @@ class WeatherMonitor:
         self.ha_client = ha_client
         self.shared_state = shared_state
         self.check_interval = config.get('check_interval', 300)
-        self.ftp_host = 'ftp.bom.gov.au'
-        self.warnings_path = '/anon/gen/fwo'
+        self.bom_base_url = 'http://www.bom.gov.au/fwo'
         self.alert_types = config.get('alert_types', [])
         self.active_alerts = {}
         self.location = config.get('location', 'Townsville')
@@ -71,34 +64,25 @@ class WeatherMonitor:
             logger.error(f"Error checking BOM warnings: {e}")
     
     async def check_bom_warnings(self):
-        """Check Australian Bureau of Meteorology warnings via FTP"""
+        """Check Australian Bureau of Meteorology warnings via HTTP"""
         try:
-            async with aioftp.Client.context(self.ftp_host) as client:
-                logger.info(f"Connected to BOM FTP: {self.ftp_host}")
+            async with aiohttp.ClientSession() as session:
+                # Get list of warning files from BOM
+                # BOM provides an index we can parse, or we can try known file patterns
+                warnings = await self.fetch_qld_warnings(session)
                 
-                # Navigate to warnings directory
-                await client.change_directory(self.warnings_path)
-                
-                # List XML warning files - only Queensland (IDQ prefix)
-                files = []
-                async for path, info in client.list():
-                    filename = str(path)
-                    # Only process Queensland warnings (IDQ prefix)
-                    if filename.endswith('.xml') and filename.upper().startswith('IDQ'):
-                        files.append(filename)
-                
-                logger.info(f"Found {len(files)} Queensland warning files")
+                logger.info(f"Found {len(warnings)} Queensland warning files")
                 
                 # Process warning files
                 current_alerts = {}
                 parsed_count = 0
-                for filename in files:  # Process all Queensland files
+                for url in warnings:
                     try:
-                        result = await self.process_warning_file(client, filename, current_alerts)
+                        result = await self.process_warning_url(session, url, current_alerts)
                         if result:
                             parsed_count += 1
                     except Exception as e:
-                        logger.error(f"Error processing {filename}: {e}")
+                        logger.error(f"Error processing {url}: {e}")
                 
                 logger.info(f"Successfully parsed {parsed_count} warning files")
                 
@@ -106,24 +90,44 @@ class WeatherMonitor:
                 await self.update_alerts(current_alerts)
                 
         except Exception as e:
-            logger.error(f"FTP connection error: {e}")
+            logger.error(f"BOM connection error: {e}")
     
-    async def process_warning_file(self, client, filename: str, current_alerts: Dict) -> bool:
+    async def fetch_qld_warnings(self, session: aiohttp.ClientSession) -> List[str]:
+        """Fetch list of Queensland warning file URLs"""
+        # Known Queensland warning product codes
+        qld_products = [
+            'IDQ20780',  # QLD warnings summary
+            'IDQ20775',  # Severe weather warnings
+            'IDQ20885',  # Severe thunderstorm warnings  
+            'IDQ21030',  # Flood warnings
+            'IDQ20800',  # Tropical cyclone warnings
+        ]
+        
+        urls = []
+        for product in qld_products:
+            urls.append(f'{self.bom_base_url}/{product}.warnings.xml')
+        
+        return urls
+    
+    async def process_warning_url(self, session: aiohttp.ClientSession, url: str, current_alerts: Dict) -> bool:
         """
         Download and parse a warning XML file
         
         Args:
-            client: FTP client
-            filename: Warning file name
+            session: aiohttp client session
+            url: Warning file URL
             current_alerts: Dictionary to store parsed alerts
             
         Returns:
             True if warning was successfully parsed
         """
         try:
-            # Download file content using aioftp
-            async with client.download_stream(filename) as stream:
-                xml_content = await stream.read()
+            # Download file content via HTTP
+            async with session.get(url) as response:
+                if response.status != 200:
+                    logger.warning(f"Failed to fetch {url}: HTTP {response.status}")
+                    return False
+                xml_content = await response.read()
             
             # Parse XML
             root = etree.fromstring(xml_content)
