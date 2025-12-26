@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.0.10] - 2025-12-27
+
+### Fixed
+- API calls in JavaScript now use relative paths for ingress compatibility
+- Dashboard and config page now load data correctly through Home Assistant ingress
+
+## [1.0.9] - 2025-12-27
+
+### Added
+- Alpine edge repository for access to py3-pjsua package
+- py3-pjsua package installed for VoIP integration support
+- VoIP calling capabilities now available (requires configuration)
+
 ## [1.0.6] - 2025-12-27
 
 ### Added

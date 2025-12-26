@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function loadConfiguration() {
     try {
-        const response = await fetch('/api/config');
+        const response = await fetch('api/config');
         const data = await response.json();
         currentConfig = data;
         
@@ -195,7 +195,7 @@ async function saveConfiguration(event) {
         });
         
         // Save to server
-        const response = await fetch('/api/config', {
+        const response = await fetch('api/config', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

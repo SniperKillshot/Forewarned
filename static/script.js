@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function refreshData() {
     try {
-        const response = await fetch('/api/status');
+        const response = await fetch('api/status');
         const data = await response.json();
         
         updateWeatherAlerts(data.weather_alerts);
