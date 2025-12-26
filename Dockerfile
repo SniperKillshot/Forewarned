@@ -5,7 +5,6 @@ FROM $BUILD_FROM
 RUN apk add --no-cache \
     python3 \
     py3-pip \
-    py3-setuptools \
     py3-lxml \
     py3-beautifulsoup4 \
     py3-aiohttp \
@@ -19,13 +18,13 @@ WORKDIR /app
 # Copy requirements first for better caching
 COPY requirements.txt .
 
-# Install remaining pip packages with build deps, then clean up
-RUN apk add --no-cache --virtual .build-deps \
-    gcc \
-    musl-dev \
-    python3-dev && \
-    pip3 install --break-system-packages --no-cache-dir -r requirements.txt && \
-    apk del .build-deps
+# Create virtual environment and install pip packages
+RUN python3 -m venv /opt/venv && \
+    . /opt/venv/bin/activate && \
+    pip install --no-cache-dir -r requirements.txt
+
+# Set PATH to use venv
+ENV PATH="/opt/venv/bin:$PATH"
 
 # Copy application files
 COPY . .
