@@ -24,7 +24,7 @@ RUN apk add --no-cache --virtual .build-deps \
     gcc \
     musl-dev \
     python3-dev && \
-    pip3 install --no-cache-dir -r requirements.txt && \
+    pip3 install --break-system-packages --no-cache-dir -r requirements.txt && \
     apk del .build-deps
 
 # Copy application files
