@@ -1,5 +1,4 @@
-ARG BUILD_FROM
-FROM ${BUILD_FROM}
+FROM ghcr.io/home-assistant/aarch64-base-python:3.10-alpine3.16
 
 # Install Python and dependencies
 RUN apk add --no-cache \
