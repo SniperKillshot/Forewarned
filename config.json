@@ -1,6 +1,6 @@
 {
   "name": "Forewarned",
-  "version": "1.0.11",
+  "version": "1.0.12",
   "slug": "forewarned",
   "description": "Weather alerting and EOC state monitoring with automated routine activation",
   "arch": ["armhf", "armv7", "aarch64", "amd64", "i386"],
@@ -11,12 +11,38 @@
   "options": {
     "check_interval": 300,
     "location": "Townsville",
-    "eoc_urls": []
+    "eoc_urls": [],
+    "voip_enabled": false,
+    "voip_backend": "webhook",
+    "voip_sip_server": "",
+    "voip_sip_user": "",
+    "voip_sip_password": "",
+    "voip_sip_domain": "",
+    "voip_webhook_url": "",
+    "voip_webhook_method": "POST",
+    "voip_webhook_auth_type": "none",
+    "voip_webhook_username": "",
+    "voip_webhook_password": "",
+    "voip_webhook_token": "",
+    "voip_alert_numbers": []
   },
   "schema": {
     "check_interval": "int",
     "location": "str",
-    "eoc_urls": ["str"]
+    "eoc_urls": ["str"],
+    "voip_enabled": "bool",
+    "voip_backend": "list(webhook|sip|ha_notify)",
+    "voip_sip_server": "str?",
+    "voip_sip_user": "str?",
+    "voip_sip_password": "password?",
+    "voip_sip_domain": "str?",
+    "voip_webhook_url": "str?",
+    "voip_webhook_method": "list(GET|POST|PUT)?",
+    "voip_webhook_auth_type": "list(none|basic|bearer)?",
+    "voip_webhook_username": "str?",
+    "voip_webhook_password": "password?",
+    "voip_webhook_token": "password?",
+    "voip_alert_numbers": ["str"]
   },
   "ports": {
     "5000/tcp": 5000

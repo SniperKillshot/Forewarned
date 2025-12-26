@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.0.12] - 2025-12-27
+
+### Added
+- VoIP configuration options in addon config page
+- Support for webhook backend (Asterisk/FreePBX)
+- Support for SIP backend (direct calling)
+- Support for Home Assistant notify service backend
+- Authentication options (none, basic, bearer token)
+- Configurable alert phone numbers
+
 ## [1.0.11] - 2025-12-27
 
 ### Fixed
