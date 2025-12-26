@@ -10,14 +10,22 @@ RUN apk add --no-cache \
     py3-beautifulsoup4 \
     py3-aiohttp \
     py3-yaml \
-    py3-requests
+    py3-requests \
+    py3-flask
 
 # Create app directory
 WORKDIR /app
 
 # Copy requirements first for better caching
 COPY requirements.txt .
-RUN pip3 install --no-cache-dir -r requirements.txt
+
+# Install remaining pip packages with build deps, then clean up
+RUN apk add --no-cache --virtual .build-deps \
+    gcc \
+    musl-dev \
+    python3-dev && \
+    pip3 install --no-cache-dir -r requirements.txt && \
+    apk del .build-deps
 
 # Copy application files
 COPY . .
