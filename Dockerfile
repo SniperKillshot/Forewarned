@@ -10,17 +10,22 @@ RUN apk add --no-cache \
     py3-aiohttp \
     py3-yaml \
     py3-requests \
-    py3-flask && \
-    rm -f /usr/lib/python*/EXTERNALLY-MANAGED
+    py3-flask
 
 # Create app directory
 WORKDIR /app
 
+# Create virtual environment
+RUN python3 -m venv /app/venv
+
 # Copy requirements first for better caching
 COPY requirements.txt .
 
-# Install remaining pip packages
-RUN pip3 install --no-cache-dir -r requirements.txt
+# Install pip packages into venv
+RUN /app/venv/bin/pip install --no-cache-dir -r requirements.txt
+
+# Set environment to use venv
+ENV PATH="/app/venv/bin:$PATH"
 
 # Copy application files
 COPY . .

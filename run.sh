@@ -7,6 +7,9 @@ export WEATHER_API_KEY=$(bashio::config 'weather_api_key')
 export CHECK_INTERVAL=$(bashio::config 'check_interval')
 export SUPERVISOR_TOKEN="${SUPERVISOR_TOKEN}"
 
+# Activate virtual environment
+source /app/venv/bin/activate
+
 # Start the application
 cd /app
-python3 main.py
+python main.py
