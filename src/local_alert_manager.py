@@ -379,29 +379,28 @@ class LocalAlertManager:
             return
         
         voip_config = self.config.get('voip', {})
-        alert_calls = voip_config.get('alert_calls', {})
         
-        # Get extensions to call for this alert level
-        extensions = alert_calls.get(alert_level, [])
+        # Get alert numbers from config (call all numbers for any alert)
+        alert_numbers = voip_config.get('alert_numbers', [])
         
-        if not extensions:
-            logger.debug(f"No VOIP calls configured for {alert_level} level")
+        if not alert_numbers:
+            logger.debug(f"No VoIP alert numbers configured")
             return
         
-        logger.info(f"Making {len(extensions)} VOIP call(s) for {alert_level} alert")
+        logger.info(f"Making {len(alert_numbers)} VoIP call(s) for {alert_level} alert")
         
-        # Make calls to all configured extensions
-        for extension in extensions:
+        # Make calls to all configured numbers
+        for number in alert_numbers:
             try:
                 success = await self.voip_integration.make_alert_call(
-                    extension, alert_level, reason
+                    number, alert_level, reason
                 )
                 if success:
-                    logger.info(f"VOIP call initiated to {extension}")
+                    logger.info(f"VoIP call initiated to {number}")
                 else:
-                    logger.error(f"Failed to initiate VOIP call to {extension}")
+                    logger.error(f"Failed to initiate VoIP call to {number}")
             except Exception as e:
-                logger.error(f"Error making VOIP call to {extension}: {e}")
+                logger.error(f"Error making VoIP call to {number}: {e}")
     
     async def _trigger_clear_routine(self, old_state: Dict):
         """

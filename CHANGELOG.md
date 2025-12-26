@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.14] - 2025-12-27
+
+### Fixed
+- VoIP calls now use voip_alert_numbers from config
+- All configured numbers called for any alert level
+- Simplified alert calling logic to match config structure
+
 ## [1.0.13] - 2025-12-27
 
 ### Added
