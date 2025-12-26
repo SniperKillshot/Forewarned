@@ -1,4 +1,4 @@
-ARG BUILD_FROM
+ARG BUILD_FROM=ghcr.io/home-assistant/amd64-base:latest
 FROM $BUILD_FROM
 
 # Install Python and dependencies
@@ -6,11 +6,11 @@ RUN apk add --no-cache \
     python3 \
     py3-pip \
     py3-setuptools \
-    gcc \
-    musl-dev \
-    python3-dev \
-    libxml2-dev \
-    libxslt-dev
+    py3-lxml \
+    py3-beautifulsoup4 \
+    py3-aiohttp \
+    py3-yaml \
+    py3-requests
 
 # Create app directory
 WORKDIR /app
