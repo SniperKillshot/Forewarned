@@ -10,10 +10,8 @@ RUN apk add --no-cache \
     py3-aiohttp \
     py3-yaml \
     py3-requests \
-    py3-flask
-
-# Remove externally-managed restriction (safe in Docker)
-RUN rm -f /usr/lib/python*/EXTERNALLY-MANAGED
+    py3-flask && \
+    rm -f /usr/lib/python*/EXTERNALLY-MANAGED
 
 # Create app directory
 WORKDIR /app
