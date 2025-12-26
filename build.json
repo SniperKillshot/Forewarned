@@ -1,9 +1,9 @@
 {
-  "image": "ghcr.io/home-assistant/{arch}-addon-base-python",
+  "image": "ghcr.io/home-assistant/aarch64-base-python:3.10-alpine3.16",
   "name": "Forewarned",
   "description": "Weather alerting and EOC state monitoring with automated routine activation",
   "version": "1.0.0",
   "slug": "forewarned",
   "url": "https://github.com/yourusername/forewarned",
-  "arch": ["armhf", "armv7", "aarch64", "amd64", "i386"]
+  "arch": ["aarch64"]
 }
