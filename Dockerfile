@@ -10,7 +10,8 @@ RUN apk add --no-cache \
     py3-aiohttp \
     py3-yaml \
     py3-requests \
-    py3-flask
+    py3-flask && \
+    find /usr -name EXTERNALLY-MANAGED -delete
 
 # Create app directory
 WORKDIR /app
