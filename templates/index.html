@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Forewarned - Weather & LDMG Monitor</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
     <!-- Navigation -->
     <div class="top-nav">
         <h1>Forewarned - Weather & LDMG Monitor</h1>
-        <a href="/config" class="config-link">⚙️ Configure Alerts</a>
+        <a href="{{ url_for('config_page') }}" class="config-link">⚙️ Configure Alerts</a>
     </div>
     
     <!-- Dual Status Banner -->
@@ -77,6 +77,6 @@
         <p>Forewarned v1.0 | Home Assistant Addon</p>
     </footer>
 
-    <script src="/static/script.js"></script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
