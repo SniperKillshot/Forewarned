@@ -1,7 +1,13 @@
 """Weather monitoring and alerting"""
 import logging
 import asyncio
-import aioftp
+try:
+    import aioftp
+    AIOFTP_AVAILABLE = True
+except ImportError:
+    AIOFTP_AVAILABLE = False
+    logger = logging.getLogger(__name__)
+    logger.warning("aioftp not available - weather monitoring via FTP disabled")
 from typing import Dict, List, Optional
 from datetime import datetime
 from lxml import etree

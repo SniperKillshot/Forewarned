@@ -1,33 +1,18 @@
 ARG BUILD_FROM=homeassistant/aarch64-base:latest
 FROM ${BUILD_FROM}
 
-# Install Python and dependencies
+# Install Python and all dependencies via apk
 RUN apk add --no-cache \
     python3 \
-    py3-pip \
     py3-lxml \
     py3-beautifulsoup4 \
     py3-aiohttp \
     py3-yaml \
     py3-requests \
-    py3-flask && \
-    find /usr -name EXTERNALLY-MANAGED -delete
+    py3-flask
 
 # Create app directory
 WORKDIR /app
-
-# Create virtual environment
-RUN python3 -m venv /app/venv
-
-# Copy requirements first for better caching
-COPY requirements.txt .
-
-# Install pip packages into venv (upgrade pip first)
-RUN /app/venv/bin/pip install --break-system-packages --upgrade pip && \
-    /app/venv/bin/pip install --break-system-packages --no-cache-dir -r requirements.txt
-
-# Set environment to use venv
-ENV PATH="/app/venv/bin:$PATH"
 
 # Copy application files
 COPY . .
