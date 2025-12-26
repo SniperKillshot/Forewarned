@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.11] - 2025-12-27
+
+### Fixed
+- Package version conflicts by installing only py3-pjsua from edge repository
+- lxml symbol errors caused by mixed stable/edge package versions
+- Dockerfile now uses --repository flag for targeted edge package installation
+
 ## [1.0.10] - 2025-12-27
 
 ### Fixed

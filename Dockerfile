@@ -1,10 +1,7 @@
 ARG BUILD_FROM=homeassistant/aarch64-base:latest
 FROM ${BUILD_FROM}
 
-# Add edge repository for py3-pjsua
-RUN echo "https://dl-cdn.alpinelinux.org/alpine/edge/main" >> /etc/apk/repositories
-
-# Install Python and all dependencies via apk
+# Install Python and dependencies from stable repository
 RUN apk add --no-cache \
     python3 \
     py3-lxml \
@@ -12,8 +9,10 @@ RUN apk add --no-cache \
     py3-aiohttp \
     py3-yaml \
     py3-requests \
-    py3-flask \
-    py3-pjsua
+    py3-flask
+
+# Install py3-pjsua from edge repository (VoIP support)
+RUN apk add --no-cache --repository=https://dl-cdn.alpinelinux.org/alpine/edge/main py3-pjsua
 
 # Create app directory
 WORKDIR /app
