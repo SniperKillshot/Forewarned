@@ -112,12 +112,6 @@ class WeatherMonitor:
     
     def _process_ftp_file(self, ftp: FTP, filename: str, current_alerts: Dict) -> bool:
         """
-                
-        except Exception as e:
-            logger.error(f"FTP error: {e}")
-    
-    def _process_ftp_file(self, ftp: FTP, filename: str, current_alerts: Dict) -> bool:
-        """
         Download and parse a warning XML file from FTP
         
         Args:
