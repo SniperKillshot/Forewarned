@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alert Configuration - Forewarned</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='config.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>⚙️ Alert Configuration</h1>
+            <nav>
+                <a href="/" class="nav-link">← Back to Dashboard</a>
+            </nav>
+        </header>
+
+        <div class="config-intro">
+            <p>Configure which weather warning types/severities and LDMG states trigger each local alert level.</p>
+            <p>Use <strong>AND</strong> to require all conditions, or <strong>OR</strong> to trigger on any condition.</p>
+        </div>
+
+        <div id="status-message" class="status-message"></div>
+
+        <form id="config-form">
+            <!-- Advisory Level -->
+            <div class="alert-level-config" data-level="advisory">
+                <h2 class="level-header advisory-header">
+                    <span class="level-badge advisory-badge">ADVISORY</span>
+                    Minor alerts, informational
+                </h2>
+                
+                <div class="condition-section">
+                    <h3>Weather Conditions</h3>
+                    <div class="operator-toggle">
+                        <label>
+                            <input type="radio" name="advisory_weather_operator" value="or" checked>
+                            Match ANY (OR)
+                        </label>
+                        <label>
+                            <input type="radio" name="advisory_weather_operator" value="and">
+                            Match ALL (AND)
+                        </label>
+                    </div>
+                    <div id="advisory-weather-rules" class="rules-container"></div>
+                    <button type="button" class="add-rule-btn" onclick="addWeatherRule('advisory')">+ Add Weather Rule</button>
+                </div>
+
+                <div class="condition-section">
+                    <h3>LDMG Conditions</h3>
+                    <div class="operator-toggle">
+                        <label>
+                            <input type="radio" name="advisory_eoc_operator" value="or" checked>
+                            Match ANY (OR)
+                        </label>
+                        <label>
+                            <input type="radio" name="advisory_eoc_operator" value="and">
+                            Match ALL (AND)
+                        </label>
+                    </div>
+                    <div id="advisory-eoc-rules" class="rules-container"></div>
+                    <button type="button" class="add-rule-btn" onclick="addEOCRule('advisory')">+ Add LDMG Rule</button>
+                </div>
+
+                <div class="logic-section">
+                    <label>Between weather and LDMG conditions:</label>
+                    <select name="advisory_condition_logic" class="condition-logic">
+                        <option value="or">Trigger if EITHER matches (OR)</option>
+                        <option value="and">Trigger only if BOTH match (AND)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Watch Level -->
+            <div class="alert-level-config" data-level="watch">
+                <h2 class="level-header watch-header">
+                    <span class="level-badge watch-badge">WATCH</span>
+                    Moderate alerts, prepare
+                </h2>
+                
+                <div class="condition-section">
+                    <h3>Weather Conditions</h3>
+                    <div class="operator-toggle">
+                        <label>
+                            <input type="radio" name="watch_weather_operator" value="or" checked>
+                            Match ANY (OR)
+                        </label>
+                        <label>
+                            <input type="radio" name="watch_weather_operator" value="and">
+                            Match ALL (AND)
+                        </label>
+                    </div>
+                    <div id="watch-weather-rules" class="rules-container"></div>
+                    <button type="button" class="add-rule-btn" onclick="addWeatherRule('watch')">+ Add Weather Rule</button>
+                </div>
+
+                <div class="condition-section">
+                    <h3>LDMG Conditions</h3>
+                    <div class="operator-toggle">
+                        <label>
+                            <input type="radio" name="watch_eoc_operator" value="or" checked>
+                            Match ANY (OR)
+                        </label>
+                        <label>
+                            <input type="radio" name="watch_eoc_operator" value="and">
+                            Match ALL (AND)
+                        </label>
+                    </div>
+                    <div id="watch-eoc-rules" class="rules-container"></div>
+                    <button type="button" class="add-rule-btn" onclick="addEOCRule('watch')">+ Add LDMG Rule</button>
+                </div>
+
+                <div class="logic-section">
+                    <label>Between weather and LDMG conditions:</label>
+                    <select name="watch_condition_logic" class="condition-logic">
+                        <option value="or">Trigger if EITHER matches (OR)</option>
+                        <option value="and">Trigger only if BOTH match (AND)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Warning Level -->
+            <div class="alert-level-config" data-level="warning">
+                <h2 class="level-header warning-header">
+                    <span class="level-badge warning-badge">WARNING</span>
+                    Severe alerts, take action
+                </h2>
+                
+                <div class="condition-section">
+                    <h3>Weather Conditions</h3>
+                    <div class="operator-toggle">
+                        <label>
+                            <input type="radio" name="warning_weather_operator" value="or" checked>
+                            Match ANY (OR)
+                        </label>
+                        <label>
+                            <input type="radio" name="warning_weather_operator" value="and">
+                            Match ALL (AND)
+                        </label>
+                    </div>
+                    <div id="warning-weather-rules" class="rules-container"></div>
+                    <button type="button" class="add-rule-btn" onclick="addWeatherRule('warning')">+ Add Weather Rule</button>
+                </div>
+
+                <div class="condition-section">
+                    <h3>LDMG Conditions</h3>
+                    <div class="operator-toggle">
+                        <label>
+                            <input type="radio" name="warning_eoc_operator" value="or" checked>
+                            Match ANY (OR)
+                        </label>
+                        <label>
+                            <input type="radio" name="warning_eoc_operator" value="and">
+                            Match ALL (AND)
+                        </label>
+                    </div>
+                    <div id="warning-eoc-rules" class="rules-container"></div>
+                    <button type="button" class="add-rule-btn" onclick="addEOCRule('warning')">+ Add LDMG Rule</button>
+                </div>
+
+                <div class="logic-section">
+                    <label>Between weather and LDMG conditions:</label>
+                    <select name="warning_condition_logic" class="condition-logic">
+                        <option value="or">Trigger if EITHER matches (OR)</option>
+                        <option value="and">Trigger only if BOTH match (AND)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Emergency Level -->
+            <div class="alert-level-config" data-level="emergency">
+                <h2 class="level-header emergency-header">
+                    <span class="level-badge emergency-badge">EMERGENCY</span>
+                    Extreme alerts, immediate action
+                </h2>
+                
+                <div class="condition-section">
+                    <h3>Weather Conditions</h3>
+                    <div class="operator-toggle">
+                        <label>
+                            <input type="radio" name="emergency_weather_operator" value="or" checked>
+                            Match ANY (OR)
+                        </label>
+                        <label>
+                            <input type="radio" name="emergency_weather_operator" value="and">
+                            Match ALL (AND)
+                        </label>
+                    </div>
+                    <div id="emergency-weather-rules" class="rules-container"></div>
+                    <button type="button" class="add-rule-btn" onclick="addWeatherRule('emergency')">+ Add Weather Rule</button>
+                </div>
+
+                <div class="condition-section">
+                    <h3>LDMG Conditions</h3>
+                    <div class="operator-toggle">
+                        <label>
+                            <input type="radio" name="emergency_eoc_operator" value="or" checked>
+                            Match ANY (OR)
+                        </label>
+                        <label>
+                            <input type="radio" name="emergency_eoc_operator" value="and">
+                            Match ALL (AND)
+                        </label>
+                    </div>
+                    <div id="emergency-eoc-rules" class="rules-container"></div>
+                    <button type="button" class="add-rule-btn" onclick="addEOCRule('emergency')">+ Add LDMG Rule</button>
+                </div>
+
+                <div class="logic-section">
+                    <label>Between weather and LDMG conditions:</label>
+                    <select name="emergency_condition_logic" class="condition-logic">
+                        <option value="or">Trigger if EITHER matches (OR)</option>
+                        <option value="and">Trigger only if BOTH match (AND)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="save-btn">💾 Save Configuration</button>
+                <button type="button" class="reset-btn" onclick="loadConfiguration()">🔄 Reset</button>
+            </div>
+        </form>
+    </div>
+
+    <script src="{{ url_for('static', filename='config.js') }}"></script>
+</body>
+</html>

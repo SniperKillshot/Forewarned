@@ -1,0 +1,33 @@
+{
+  "name": "Forewarned",
+  "version": "1.0.0",
+  "slug": "forewarned",
+  "description": "Weather alerting and EOC state monitoring with automated routine activation",
+  "arch": ["armhf", "armv7", "aarch64", "amd64", "i386"],
+  "startup": "application",
+  "boot": "auto",
+  "init": false,
+  "map": ["config:rw"],
+  "options": {
+    "check_interval": 300,
+    "location": "Townsville",
+    "alert_entities": [],
+    "eoc_urls": []
+  },
+  "schema": {
+    "check_interval": "int",
+    "location": "str",
+    "alert_entities": ["str"],
+    "eoc_urls": ["str"]
+  },
+  "ports": {
+    "5000/tcp": 5000
+  },
+  "webui": "http://[HOST]:[PORT:5000]",
+  "hassio_api": true,
+  "hassio_role": "default",
+  "homeassistant_api": true,
+  "ingress": true,
+  "ingress_port": 5000,
+  "panel_icon": "mdi:weather-lightning"
+}

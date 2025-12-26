@@ -1,0 +1,150 @@
+{
+  "weather_api_key": "",
+  "check_interval": 300,
+  "alert_entities": [],
+  "eoc_urls": [
+    "https://disaster.townsville.qld.gov.au/"
+  ],
+  "weather_sources": {
+    "bom": true
+  },
+  "location": "Townsville",
+  "alert_types": [
+    "Severe Thunderstorm Warning",
+    "Severe Weather Warning",
+    "Flood Warning",
+    "Fire Weather Warning",
+    "Tropical Cyclone Warning",
+    "Tsunami Warning",
+    "Heatwave Warning"
+  ],
+  "routines": {
+    "tornado_warning": [],
+    "severe_weather": [],
+    "eoc_activated": [],
+    "eoc_alert": [],
+    "eoc_lean_forward": [],
+    "eoc_stand_up": [],
+    "eoc_stand_down": [],
+    "advisory_alert": [],
+    "watch_alert": [],
+    "warning_alert": [],
+    "emergency_alert": [],
+    "alert_cleared": []
+  },
+  "alert_rules": {
+    "advisory": {
+      "weather_conditions": {
+        "operator": "or",
+        "rules": [
+          {
+            "type": "any",
+            "severity": "any"
+          }
+        ]
+      },
+      "eoc_conditions": {
+        "operator": "or",
+        "rules": []
+      },
+      "condition_logic": "or"
+    },
+    "watch": {
+      "weather_conditions": {
+        "operator": "or",
+        "rules": [
+          {
+            "type": "any",
+            "severity": "moderate"
+          }
+        ]
+      },
+      "eoc_conditions": {
+        "operator": "or",
+        "rules": [
+          {
+            "state": "alert"
+          }
+        ]
+      },
+      "condition_logic": "and"
+    },
+    "warning": {
+      "weather_conditions": {
+        "operator": "or",
+        "rules": [
+          {
+            "type": "any",
+            "severity": "severe"
+          }
+        ]
+      },
+      "eoc_conditions": {
+        "operator": "or",
+        "rules": [
+          {
+            "state": "lean forward"
+          }
+        ]
+      },
+      "condition_logic": "or"
+    },
+    "emergency": {
+      "weather_conditions": {
+        "operator": "or",
+        "rules": [
+          {
+            "type": "Tropical Cyclone Warning",
+            "severity": "any"
+          },
+          {
+            "type": "Flood Warning",
+            "severity": "moderate"
+          },
+          {
+            "type": "Flash Flooding",
+            "severity": "moderate"
+          },
+          {
+            "type": "Tsunami Warning",
+            "severity": "any"
+          }
+        ]
+      },
+      "eoc_conditions": {
+        "operator": "or",
+        "rules": [
+          {
+            "state": "stand up"
+          }
+        ]
+      },
+      "condition_logic": "or"
+    }
+  },
+  "voip": {
+    "enabled": false,
+    "backend": "webhook",
+    "webhook_url": "http://your-asterisk-server:5038/ami",
+    "webhook_auth": {
+      "username": "manager_user",
+      "secret": "manager_password"
+    },
+    "webhook_payload_template": {
+      "Action": "Originate",
+      "Channel": "PJSIP/{extension}",
+      "Context": "forewarned-alerts",
+      "Exten": "s",
+      "Priority": "1",
+      "CallerID": "Forewarned Alert <1000>",
+      "Timeout": "30000",
+      "Variable": ["ALERT_LEVEL={alert_level}", "ALERT_REASON={reason}"]
+    },
+    "alert_calls": {
+      "emergency": ["100", "bedside"],
+      "warning": ["100"],
+      "watch": [],
+      "advisory": []
+    }
+  }
+}

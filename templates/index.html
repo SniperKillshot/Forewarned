@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forewarned - Weather & LDMG Monitor</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <div class="top-nav">
+        <h1>Forewarned - Weather & LDMG Monitor</h1>
+        <a href="/config" class="config-link">⚙️ Configure Alerts</a>
+    </div>
+    
+    <!-- Dual Status Banner -->
+    <div class="status-banners">
+        <!-- Local Alert Level Banner -->
+        <div id="local-alert-banner" class="alert-banner alert-banner-none">
+            <div class="banner-content">
+                <span class="banner-label">Alert Level:</span>
+                <strong id="local-alert-level">NONE</strong>
+            </div>
+            <div class="banner-detail" id="local-alert-detail"></div>
+        </div>
+        
+        <!-- LDMG State Banner -->
+        <div id="eoc-banner" class="eoc-banner eoc-banner-inactive">
+            <div class="banner-content">
+                <span class="banner-label">LDMG Status:</span>
+                <strong id="eoc-banner-state">INACTIVE</strong>
+            </div>
+            <div class="banner-detail" id="eoc-banner-detail"></div>
+        </div>
+    </div>
+
+    <main>
+        <section class="status-overview">
+            <div class="stat-card" id="weather-card">
+                <h2>Weather Alerts</h2>
+                <div class="stat-value" id="weather-count">-</div>
+                <p>Active Alerts</p>
+            </div>
+            
+            <div class="stat-card" id="date-card">
+                <h2>Date</h2>
+                <div class="stat-value" id="current-date">--/--/----</div>
+                <p id="day-of-week">---</p>
+            </div>
+            
+            <div class="stat-card" id="local-time-card">
+                <h2>Local Time</h2>
+                <div class="stat-value" id="local-time">--:--:--</div>
+                <p>AEST/AEDT</p>
+            </div>
+            
+            <div class="stat-card" id="utc-time-card">
+                <h2>UTC Time</h2>
+                <div class="stat-value" id="utc-time">--:--:--</div>
+                <p>Coordinated Universal</p>
+            </div>
+        </section>
+
+        <section class="alerts-section">
+            <h2>Active Weather Alerts</h2>
+            <div id="weather-alerts" class="alerts-container">
+                <p class="no-data">No active alerts</p>
+            </div>
+        </section>
+
+        <section class="info-section">
+            <p class="last-update">Last updated: <span id="last-update">Never</span></p>
+        </section>
+    </main>
+
+    <footer>
+        <p>Forewarned v1.0 | Home Assistant Addon</p>
+    </footer>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>
