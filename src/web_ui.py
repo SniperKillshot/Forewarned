@@ -2,6 +2,7 @@
 import logging
 import os
 from flask import Flask, render_template, jsonify, request
+from werkzeug.middleware.proxy_fix import ProxyFix
 from datetime import datetime
 
 logger = logging.getLogger(__name__)
@@ -31,6 +32,9 @@ def create_app():
     app = Flask(__name__, 
                 template_folder=template_dir,
                 static_folder=static_dir)
+    
+    # Handle Home Assistant ingress proxy
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
     
     # Disable template caching for development
     app.config['TEMPLATES_AUTO_RELOAD'] = True
