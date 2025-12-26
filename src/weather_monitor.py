@@ -68,11 +68,16 @@ class WeatherMonitor:
         """Check Australian Bureau of Meteorology warnings via FTP"""
         try:
             # Run FTP operations in thread pool to avoid blocking
-            await asyncio.to_thread(self._fetch_ftp_warnings)
+            current_alerts = await asyncio.to_thread(self._fetch_ftp_warnings)
+            
+            # Update alerts back in async context
+            if current_alerts is not None:
+                await self.update_alerts(current_alerts)
+                
         except Exception as e:
             logger.error(f"FTP connection error: {e}")
     
-    def _fetch_ftp_warnings(self):
+    def _fetch_ftp_warnings(self) -> Dict:
         """Fetch warnings from BOM FTP (runs in thread pool)"""
         try:
             with FTP(self.ftp_host) as ftp:
@@ -101,13 +106,11 @@ class WeatherMonitor:
                 
                 logger.info(f"Successfully parsed {parsed_count} warning files")
                 
-                # Update alerts (need to schedule this back on event loop)
-                asyncio.run_coroutine_threadsafe(
-                    self.update_alerts(current_alerts),
-                    asyncio.get_event_loop()
-                )
+                return current_alerts
                 
         except Exception as e:
+            logger.error(f"FTP error: {e}")
+            return {}
             logger.error(f"FTP error: {e}")
     
     def _process_ftp_file(self, ftp: FTP, filename: str, current_alerts: Dict) -> bool:
