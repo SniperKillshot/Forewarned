@@ -5,7 +5,12 @@ FROM $BUILD_FROM
 RUN apk add --no-cache \
     python3 \
     py3-pip \
-    py3-setuptools
+    py3-setuptools \
+    gcc \
+    musl-dev \
+    python3-dev \
+    libxml2-dev \
+    libxslt-dev
 
 # Create app directory
 WORKDIR /app
