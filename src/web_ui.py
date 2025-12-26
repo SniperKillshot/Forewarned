@@ -33,7 +33,25 @@ def create_app():
                 template_folder=template_dir,
                 static_folder=static_dir)
     
-    # Handle Home Assistant ingress proxy
+    # Middleware to handle Home Assistant ingress path
+    class IngressMiddleware:
+        def __init__(self, wsgi_app):
+            self.wsgi_app = wsgi_app
+            
+        def __call__(self, environ, start_response):
+            # Check for ingress path header
+            ingress_path = environ.get('HTTP_X_INGRESS_PATH', '')
+            if ingress_path:
+                # Set SCRIPT_NAME so Flask generates correct URLs
+                environ['SCRIPT_NAME'] = ingress_path
+                # Remove ingress path from PATH_INFO
+                path_info = environ.get('PATH_INFO', '')
+                if path_info.startswith(ingress_path):
+                    environ['PATH_INFO'] = path_info[len(ingress_path):]
+            return self.wsgi_app(environ, start_response)
+    
+    # Apply ingress middleware first, then proxy fix
+    app.wsgi_app = IngressMiddleware(app.wsgi_app)
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
     
     # Disable template caching for development
