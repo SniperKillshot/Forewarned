@@ -19,7 +19,6 @@ def load_config():
     default_config = {
         'weather_api_key': '',
         'check_interval': 300,  # 5 minutes
-        'alert_entities': [],
         'eoc_urls': [
             'https://disaster.townsville.qld.gov.au/'
         ],
