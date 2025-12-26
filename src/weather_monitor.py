@@ -112,19 +112,10 @@ class WeatherMonitor:
     
     def _process_ftp_file(self, ftp: FTP, filename: str, current_alerts: Dict) -> bool:
         """
-        Download and parse a warning XML file
-        
-        Args:
-            session: aiohttp client session
-            url: Warning file URL
-            current_alerts: Dictionary to store parsed alerts
-            
-        Returns:
-            True if warning was successfully parsed
-        """
-        try:
-            # Download file content via HTTP
-            async with session.get(url) as response:
+                
+        except Exception as e:
+            logger.error(f"FTP error: {e}")
+    
     def _process_ftp_file(self, ftp: FTP, filename: str, current_alerts: Dict) -> bool:
         """
         Download and parse a warning XML file from FTP
