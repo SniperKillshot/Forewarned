@@ -89,14 +89,6 @@ class EOCMonitor:
         Args:
             data: JSON response from Guardian IMS API
         """
-        
-        # Extract relevant content based on selectors
-        if selectors:
-            content = self.extract_content(soup, selectors)
-            logger.debug(f"Extracted content using selectors: {len(content)} bytes")
-        else:
-            # Use full page text if no selectors provided
-            content = soup.get_text(strip=True)
         try:
             features = data.get('features', [])
             if not features:

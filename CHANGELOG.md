@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.0.25] - 2025-12-27
+
+### Fixed
+- Removed leftover HTML scraping code causing NameError in process_guardian_response
+- Fixed 'selectors' is not defined error
+
 ## [1.0.24] - 2025-12-27
 
 ### Changed
