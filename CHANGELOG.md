@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.0.20] - 2025-12-27
+
+### Added
+- Debug logging shows first 500 chars of page content
+- Log which keywords are found during state detection
+- Log when no EOC keywords found (inactive state)
+
+### Fixed
+- Better visibility into why EOC state detection returns inactive
+- Helps diagnose keyword matching issues with LDMG website
+
 ## [1.0.19] - 2025-12-27
 
 ### Fixed

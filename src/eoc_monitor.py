@@ -214,19 +214,27 @@ class EOCMonitor:
         """
         content_lower = content.lower()
         
+        # Log sample of content for debugging
+        logger.debug(f"Content sample (first 500 chars): {content[:500]}")
+        
         # Check for specific states (order matters - check most specific first)
         # These keywords only appear on the page when there's an actual EOC activation
         if 'stand up' in content_lower or 'standup' in content_lower:
+            logger.info("Found 'stand up' keyword in content")
             return 'stand up'
         elif 'lean forward' in content_lower or 'leanforward' in content_lower:
+            logger.info("Found 'lean forward' keyword in content")
             return 'lean forward'
         elif 'stand down' in content_lower or 'standdown' in content_lower:
+            logger.info("Found 'stand down' keyword in content")
             return 'stand down'
         # Only match 'alert' if it's specifically about EOC
         elif 'eoc' in content_lower and 'alert' in content_lower:
+            logger.info("Found 'eoc' + 'alert' keywords in content")
             return 'alert'
         
         # If none of the state keywords are found, EOC is inactive
+        logger.debug("No EOC state keywords found, returning 'inactive'")
         return 'inactive'
     
     async def trigger_eoc_routine(self, state: str):
