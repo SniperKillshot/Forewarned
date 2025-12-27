@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.0.30] - 2025-12-27
+### Fixed
+- Added async wait (up to 10 seconds) for SIP registration before making outbound calls
+- Prevents call attempts before registration completes
+- Logs registration wait status and timeout if registration fails
+
 ## [1.0.29] - 2025-12-27
 ### Fixed
 - Added registration state tracking to prevent outbound calls before SIP registration completes

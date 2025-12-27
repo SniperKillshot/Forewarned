@@ -348,9 +348,20 @@ class VOIPIntegration:
             logger.error("SIP not initialized - cannot make call")
             return False
         
+        # Wait for registration with timeout
         if not self.registration_active:
-            logger.error("SIP not registered - cannot make call. Waiting for registration...")
-            return False
+            logger.info("SIP not yet registered. Waiting up to 10 seconds for registration...")
+            max_wait = 10  # seconds
+            waited = 0
+            while not self.registration_active and waited < max_wait:
+                await asyncio.sleep(0.5)
+                waited += 0.5
+            
+            if not self.registration_active:
+                logger.error(f"SIP registration timeout after {max_wait} seconds - cannot make call")
+                return False
+            
+            logger.info("SIP registration confirmed - proceeding with call")
         
         try:
             # Create call URI
