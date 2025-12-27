@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.28] - 2025-12-27
+### Fixed
+- Added SIP registration state monitoring (onRegState callback)
+- Fixed SIP transport to use configurable port (default 5060) instead of random port
+- Improved incoming call handling with better error logging
+- Added sip_port configuration option
+
 ## [1.0.27] - 2025-12-27
 
 ### Fixed

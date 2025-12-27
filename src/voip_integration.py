@@ -135,8 +135,20 @@ class AlertAccount(pj.Account):
         pj.Account.__init__(self)
         self.voip = voip_integration
         
+    def onRegState(self, prm):
+        """Callback when registration state changes"""
+        ai = self.getInfo()
+        logger.info(f"SIP registration status: {ai.regStatusText} (code: {ai.regStatus})")
+        if ai.regIsActive:
+            logger.info("SIP registration ACTIVE - ready to receive calls")
+        else:
+            logger.warning("SIP registration INACTIVE")
+    
     def onIncomingCall(self, prm):
         """Callback for incoming calls"""
+        logger.info(f"onIncomingCall triggered - CallId: {prm.callId}")
+        
+        # Create call object - this takes ownership of the call
         call = AlertCall(self, prm.callId, self.voip)
         
         # Get call info
@@ -144,11 +156,13 @@ class AlertAccount(pj.Account):
         logger.info(f"Incoming call from {ci.remoteUri}")
         
         # Auto-answer incoming calls
-        call_prm = pj.CallOpParam()
-        call_prm.statusCode = 200
-        call.answer(call_prm)
-        
-        logger.info("Incoming call answered automatically")
+        try:
+            call_prm = pj.CallOpParam()
+            call_prm.statusCode = 200
+            call.answer(call_prm)
+            logger.info("Incoming call answered automatically")
+        except Exception as e:
+            logger.error(f"Error answering call: {e}")
 
 
 class VOIPIntegration:
@@ -207,6 +221,7 @@ class VOIPIntegration:
         self.sip_user = self.config.get('sip_user', '')
         self.sip_password = self.config.get('sip_password', '')
         self.sip_domain = self.config.get('sip_domain', '')
+        self.sip_port = self.config.get('sip_port', 5060)  # Default to standard SIP port
         
         if not all([self.sip_server, self.sip_user, self.sip_password, self.sip_domain]):
             logger.error("SIP backend requires server, user, password, and domain to be configured")
@@ -247,8 +262,10 @@ class VOIPIntegration:
             
             # Create SIP transport
             sipTpConfig = pj.TransportConfig()
-            sipTpConfig.port = 0  # Use random port
+            sipTpConfig.port = self.sip_port  # Use configured port (default 5060)
             self.ep.transportCreate(pj.PJSIP_TRANSPORT_UDP, sipTpConfig)
+            
+            logger.info(f"SIP transport created on UDP port {self.sip_port}")
             
             # Start the library
             self.ep.libStart()
