@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.0.15] - 2025-12-27
+
+### Added
+- Custom AlertCall class with TTS playback support
+- Custom AlertAccount class to auto-answer incoming calls
+- TTS message generation using espeak-ng
+- WAV file playback to SIP calls via AudioMediaPlayer
+- Automatic incoming call handling with alert status announcement
+- Call state and media state callbacks
+- espeak-ng TTS engine in Docker image
+
+### Changed
+- Outbound calls now play TTS message when answered
+- Inbound calls automatically answered and play current alert status
+- Full duplex audio support for calls
+
 ## [1.0.14] - 2025-12-27
 
 ### Fixed

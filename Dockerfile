@@ -9,7 +9,8 @@ RUN apk add --no-cache \
     py3-aiohttp \
     py3-yaml \
     py3-requests \
-    py3-flask
+    py3-flask \
+    espeak-ng
 
 # Install py3-pjsua from edge repository (VoIP support)
 RUN apk add --no-cache --repository=https://dl-cdn.alpinelinux.org/alpine/edge/main py3-pjsua

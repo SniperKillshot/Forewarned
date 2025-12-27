@@ -3,6 +3,8 @@ import logging
 import asyncio
 from typing import Optional, Dict, Callable
 import os
+import tempfile
+import subprocess
 
 logger = logging.getLogger(__name__)
 
@@ -21,6 +23,142 @@ try:
 except ImportError:
     logger.warning("Flask not available - HTTP VOIP webhook disabled")
     FLASK_AVAILABLE = False
+
+
+class AlertCall(pj.Call):
+    """Custom Call class to handle inbound/outbound calls with TTS"""
+    
+    def __init__(self, account, call_id=pj.PJSUA_INVALID_ID, voip_integration=None):
+        pj.Call.__init__(self, account, call_id)
+        self.voip = voip_integration
+        self.tts_player = None
+        
+    def onCallState(self, prm):
+        """Callback when call state changes"""
+        ci = self.getInfo()
+        logger.info(f"Call {ci.callIdString} state: {ci.stateText}")
+        
+        if ci.state == pj.PJSIP_INV_STATE_CONFIRMED:
+            # Call answered - play TTS
+            logger.info("Call answered, playing TTS message")
+            self._play_tts_message()
+        elif ci.state == pj.PJSIP_INV_STATE_DISCONNECTED:
+            logger.info(f"Call ended: {ci.lastReason}")
+            if self.tts_player:
+                try:
+                    self.tts_player = None
+                except:
+                    pass
+    
+    def onCallMediaState(self, prm):
+        """Callback when media state changes"""
+        ci = self.getInfo()
+        
+        for mi in ci.media:
+            if mi.type == pj.PJMEDIA_TYPE_AUDIO and mi.status == pj.PJSUA_CALL_MEDIA_ACTIVE:
+                # Get audio media
+                aud_med = self.getAudioMedia(mi.index)
+                
+                # Connect to sound device
+                aud_med.startTransmit(pj.Endpoint.instance().audDevManager().getPlaybackDevMedia())
+                pj.Endpoint.instance().audDevManager().getCaptureDevMedia().startTransmit(aud_med)
+                
+                logger.info("Audio media connected")
+    
+    def _play_tts_message(self):
+        """Play TTS message on call"""
+        if not self.voip:
+            return
+            
+        # Generate message text
+        state = self.voip.get_alert_state()
+        message = self.voip.generate_status_tts()
+        
+        logger.info(f"Playing message: {message}")
+        
+        # For basic implementation, use pico2wave or espeak for TTS
+        # Generate WAV file and play it
+        try:
+            wav_file = self._generate_tts_wav(message)
+            if wav_file:
+                self._play_wav_file(wav_file)
+        except Exception as e:
+            logger.error(f"Error playing TTS: {e}")
+    
+    def _generate_tts_wav(self, text: str) -> Optional[str]:
+        """Generate WAV file from text using TTS"""
+        try:
+            # Create temporary WAV file
+            temp_wav = tempfile.NamedTemporaryFile(suffix='.wav', delete=False)
+            temp_wav.close()
+            
+            # Try espeak-ng first (more likely to be available in Alpine)
+            try:
+                subprocess.run([
+                    'espeak-ng', '-w', temp_wav.name, text
+                ], check=True, capture_output=True)
+                logger.info(f"Generated TTS with espeak-ng: {temp_wav.name}")
+                return temp_wav.name
+            except (FileNotFoundError, subprocess.CalledProcessError):
+                pass
+            
+            # Fallback to espeak
+            try:
+                subprocess.run([
+                    'espeak', '-w', temp_wav.name, text
+                ], check=True, capture_output=True)
+                logger.info(f"Generated TTS with espeak: {temp_wav.name}")
+                return temp_wav.name
+            except (FileNotFoundError, subprocess.CalledProcessError):
+                logger.error("No TTS engine available (espeak-ng or espeak)")
+                return None
+                
+        except Exception as e:
+            logger.error(f"Error generating TTS WAV: {e}")
+            return None
+    
+    def _play_wav_file(self, wav_path: str):
+        """Play WAV file to call"""
+        try:
+            # Create WAV player
+            player = pj.AudioMediaPlayer()
+            player.createPlayer(wav_path, pj.PJMEDIA_FILE_NO_LOOP)
+            
+            # Connect to call
+            ci = self.getInfo()
+            for mi in ci.media:
+                if mi.type == pj.PJMEDIA_TYPE_AUDIO and mi.status == pj.PJSUA_CALL_MEDIA_ACTIVE:
+                    aud_med = self.getAudioMedia(mi.index)
+                    player.startTransmit(aud_med)
+                    self.tts_player = player
+                    logger.info(f"Playing WAV file to call: {wav_path}")
+                    break
+                    
+        except Exception as e:
+            logger.error(f"Error playing WAV file: {e}")
+
+
+class AlertAccount(pj.Account):
+    """Custom Account class to handle incoming calls"""
+    
+    def __init__(self, voip_integration=None):
+        pj.Account.__init__(self)
+        self.voip = voip_integration
+        
+    def onIncomingCall(self, prm):
+        """Callback for incoming calls"""
+        call = AlertCall(self, prm.callId, self.voip)
+        
+        # Get call info
+        ci = call.getInfo()
+        logger.info(f"Incoming call from {ci.remoteUri}")
+        
+        # Auto-answer incoming calls
+        call_prm = pj.CallOpParam()
+        call_prm.statusCode = 200
+        call.answer(call_prm)
+        
+        logger.info("Incoming call answered automatically")
 
 
 class VOIPIntegration:
@@ -120,11 +258,12 @@ class VOIPIntegration:
             cred = pj.AuthCredInfo("digest", "*", self.sip_user, 0, self.sip_password)
             acc_cfg.sipConfig.authCreds.append(cred)
             
-            # Create account
-            self.account = pj.Account()
+            # Create custom account that handles incoming calls
+            self.account = AlertAccount(voip_integration=self)
             self.account.create(acc_cfg)
             
             logger.info(f"SIP registration initiated for {self.sip_user}@{self.sip_domain} via {self.sip_server}")
+            logger.info("Ready to accept incoming calls with TTS playback")
             
         except Exception as e:
             logger.error(f"Failed to initialize SIP: {e}")
@@ -187,8 +326,8 @@ class VOIPIntegration:
             # Create call URI
             call_uri = f"sip:{extension}@{self.sip_domain}"
             
-            # Create call
-            call = pj.Call(self.account)
+            # Create custom call with TTS support
+            call = AlertCall(self.account, voip_integration=self)
             call_param = pj.CallOpParam()
             call_param.opt.audioCount = 1
             call_param.opt.videoCount = 0
@@ -196,7 +335,13 @@ class VOIPIntegration:
             # Make the call
             call.makeCall(call_uri, call_param)
             
-            logger.info(f"SIP call initiated to {call_uri}")
+            logger.info(f"SIP call initiated to {call_uri} with TTS playback")
+            
+            return True
+            
+        except Exception as e:
+            logger.error(f"Error making SIP call: {e}")
+            return False
             
             # Note: In production, you'd want to:
             # 1. Wait for call to be answered
