@@ -485,41 +485,11 @@ footer {
     margin-top: 3rem;
 }
 
-/* LDMG Dashboard Embed */
-.ldmg-section {
-    margin: 2rem auto;
-    padding: 0 2rem;
-    max-width: 1400px;
-}
-
-.ldmg-section h2 {
-    margin-bottom: 1rem;
-    color: var(--text);
-}
-
-.ldmg-container {
-    background: var(--bg-card);
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-}
-
-.ldmg-iframe {
-    width: 100%;
-    height: 800px;
-    border: none;
-    display: block;
-}
-
+/* Responsive Design */
 @media (max-width: 768px) {
-    .ldmg-iframe {
-        height: 600px;
-    }
-}
-
+    header h1 {
+        font-size: 2rem;
     }
     
-    .stat-value {
-        font-size: 2.5rem;
-    }
-}
+    .status-overview {
+        grid-template-columns: 1fr;

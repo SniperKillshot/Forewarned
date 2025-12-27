@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.0.23] - 2025-12-27
+
+### Removed
+- LDMG iframe embed (blocked by Content-Security-Policy frame-ancestors)
+- Site cannot be embedded from different origins
+
+### Note
+- LDMG monitoring requires manual intervention or alternative approach
+- JavaScript-rendered dashboard cannot be scraped with current implementation
+- Consider using manual switches for EOC state management
+
 ## [1.0.22] - 2025-12-27
 
 ### Added
