@@ -140,8 +140,12 @@ class AlertAccount(pj.Account):
         ai = self.getInfo()
         logger.info(f"SIP registration status: {ai.regStatusText} (code: {ai.regStatus})")
         if ai.regIsActive:
-            logger.info("SIP registration ACTIVE - ready to receive calls")
+            if self.voip:
+                self.voip.registration_active = True
+            logger.info("SIP registration ACTIVE - ready to make and receive calls")
         else:
+            if self.voip:
+                self.voip.registration_active = False
             logger.warning("SIP registration INACTIVE")
     
     def onIncomingCall(self, prm):
@@ -185,6 +189,7 @@ class VOIPIntegration:
         self.get_alert_state = get_alert_state
         self.enabled = config.get('enabled', False)
         self.backend = config.get('backend', 'webhook')  # 'sip', 'webhook', 'ha_notify'
+        self.registration_active = False  # Track SIP registration status
         
         if not self.enabled:
             logger.info("VOIP integration disabled")
@@ -341,6 +346,10 @@ class VOIPIntegration:
         """Make call via SIP/PJSUA2"""
         if not self.ep or not self.account:
             logger.error("SIP not initialized - cannot make call")
+            return False
+        
+        if not self.registration_active:
+            logger.error("SIP not registered - cannot make call. Waiting for registration...")
             return False
         
         try:

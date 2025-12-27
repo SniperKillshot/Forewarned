@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.0.29] - 2025-12-27
+### Fixed
+- Added registration state tracking to prevent outbound calls before SIP registration completes
+- Outbound calls now wait for confirmed SIP registration
+- Added registration_active flag updated by onRegState callback
+
 ## [1.0.28] - 2025-12-27
 ### Fixed
 - Added SIP registration state monitoring (onRegState callback)
