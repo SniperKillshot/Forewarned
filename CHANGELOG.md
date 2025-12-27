@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.16] - 2025-12-27
+
+### Fixed
+- Added debug logging for VoIP configuration loading
+- Log voip_enabled and voip_alert_numbers from options.json
+- Helps diagnose configuration persistence issues
+
 ## [1.0.15] - 2025-12-27
 
 ### Added

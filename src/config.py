@@ -120,8 +120,9 @@ def load_config():
         if os.path.exists(config_path):
             with open(config_path, 'r') as f:
                 user_config = json.load(f)
+                logger.info(f"Loaded configuration from Home Assistant: {config_path}")
+                logger.debug(f"VoIP settings from options.json: voip_enabled={user_config.get('voip_enabled')}, voip_alert_numbers={user_config.get('voip_alert_numbers')}")
                 default_config.update(user_config)
-                logger.info("Loaded configuration from Home Assistant")
         else:
             logger.warning(f"Config file not found at {config_path}, using defaults")
             

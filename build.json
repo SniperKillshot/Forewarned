@@ -4,7 +4,7 @@
   },
   "name": "Forewarned",
   "description": "Weather alerting and EOC state monitoring with automated routine activation",
-  "version": "1.0.15",
+  "version": "1.0.16",
   "slug": "forewarned",
   "url": "https://github.com/yourusername/forewarned",
   "arch": ["aarch64"]
