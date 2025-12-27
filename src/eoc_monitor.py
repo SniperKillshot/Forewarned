@@ -30,6 +30,12 @@ class EOCMonitor:
         self.page_hashes = {}  # Store content hashes to detect changes
         self.eoc_states = {}
         
+        logger.info(f"EOC Monitor initialized with {len(self.eoc_urls)} URL(s)")
+        if self.eoc_urls:
+            logger.info(f"Monitoring URLs: {self.eoc_urls}")
+        else:
+            logger.warning("No EOC URLs configured - LDMG monitoring disabled")
+        
     async def start(self):
         """Start the monitoring loop"""
         logger.info("EOC monitor started")
@@ -44,7 +50,11 @@ class EOCMonitor:
     
     async def check_eoc_sites(self):
         """Check all configured EOC sites"""
-        logger.info("Checking EOC sites...")
+        if not self.eoc_urls:
+            logger.debug("No EOC URLs configured, skipping check")
+            return
+            
+        logger.info(f"Checking {len(self.eoc_urls)} EOC site(s)...")
         
         for url_config in self.eoc_urls:
             if isinstance(url_config, str):
@@ -65,16 +75,18 @@ class EOCMonitor:
             url: URL to monitor
             selectors: CSS selectors to extract specific content
         """
+        logger.info(f"Checking EOC site: {url}")
         try:
             async with aiohttp.ClientSession() as session:
                 async with session.get(url, timeout=aiohttp.ClientTimeout(total=30)) as response:
                     if response.status == 200:
                         html = await response.text()
+                        logger.info(f"Retrieved {len(html)} bytes from {url}")
                         await self.process_page(url, html, selectors)
                     else:
                         logger.error(f"Failed to fetch {url}: {response.status}")
         except Exception as e:
-            logger.error(f"Error checking {url}: {e}")
+            logger.error(f"Error checking {url}: {e}", exc_info=True)
     
     async def process_page(self, url: str, html: str, selectors: Dict):
         """
@@ -90,20 +102,38 @@ class EOCMonitor:
         # Extract relevant content based on selectors
         if selectors:
             content = self.extract_content(soup, selectors)
+            logger.debug(f"Extracted content using selectors: {len(content)} bytes")
         else:
             # Use full page text if no selectors provided
             content = soup.get_text(strip=True)
+            logger.debug(f"Extracted full page text: {len(content)} bytes")
         
         # Calculate content hash
         content_hash = hashlib.md5(content.encode()).hexdigest()
         
+        # Detect EOC state from content
+        detected_state = self.detect_eoc_state(content)
+        logger.info(f"Detected EOC state for {url}: {detected_state}")
+        
+        # Store/update current state
+        old_state = self.eoc_states.get(url, {}).get('state', 'inactive')
+        self.eoc_states[url] = {
+            'state': detected_state,
+            'activated': detected_state != 'inactive',
+            'last_check': datetime.now().isoformat(),
+            'content_preview': content[:200]
+        }
+        
         # Check if content changed
         if url in self.page_hashes:
             if self.page_hashes[url] != content_hash:
-                logger.warning(f"CHANGE DETECTED on {url}")
-                await self.handle_change(url, content, soup)
+                logger.warning(f"CHANGE DETECTED on {url}: {old_state} -> {detected_state}")
+                if old_state != detected_state:
+                    logger.warning(f"STATE CHANGE on {url}: {old_state} -> {detected_state}")
+                    await self.trigger_eoc_routine(detected_state)
+                self.eoc_states[url]['last_change'] = datetime.now().isoformat()
         else:
-            logger.info(f"First check for {url}")
+            logger.info(f"First check for {url}, initial state: {detected_state}")
         
         self.page_hashes[url] = content_hash
         await self.update_sensor()

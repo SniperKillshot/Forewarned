@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.0.19] - 2025-12-27
+
+### Fixed
+- EOC states now stored on first check, not only on changes
+- LDMG status now appears immediately instead of waiting for site change
+- Added detailed logging for EOC site checks and state detection
+- Log shows detected state, page size, and state changes
+
+### Changed
+- EOC state detection happens on every check, not just changes
+- eoc_states dictionary populated immediately on first check
+
 ## [1.0.18] - 2025-12-27
 
 ### Fixed
