@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.0.35] - 2025-12-27
+### Fixed
+- TTS voice and speed settings now properly loaded from addon options
+- Added tts_voice and tts_speed to VoIP config dictionary mapping
+- Log TTS settings on startup for verification
+
 ## [1.0.34] - 2025-12-27
 ### Added
 - Configurable TTS voice (en-us, en-gb, en-au, en-sc)

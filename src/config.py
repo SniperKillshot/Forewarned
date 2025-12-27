@@ -157,9 +157,11 @@ def load_config():
                     'password': default_config.get('voip_webhook_password', ''),
                     'token': default_config.get('voip_webhook_token', '')
                 },
-                'alert_numbers': default_config.get('voip_alert_numbers', [])
+                'alert_numbers': default_config.get('voip_alert_numbers', []),
+                'tts_voice': default_config.get('voip_tts_voice', 'en-us'),
+                'tts_speed': default_config.get('voip_tts_speed', 160)
             }
-            logger.info(f"VoIP configuration loaded: enabled={default_config['voip']['enabled']}, backend={default_config['voip']['backend']}")
+            logger.info(f"VoIP configuration loaded: enabled={default_config['voip']['enabled']}, backend={default_config['voip']['backend']}, tts_voice={default_config['voip']['tts_voice']}, tts_speed={default_config['voip']['tts_speed']}")
             
     except Exception as e:
         logger.error(f"Error loading configuration: {e}")
