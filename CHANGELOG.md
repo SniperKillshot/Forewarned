@@ -1,5 +1,28 @@
 # Changelog
 
+## [1.0.24] - 2025-12-27
+
+### Changed
+- Replaced HTML scraping with Guardian IMS API for LDMG monitoring
+- Now fetches JSON from `/dashboard/imsOperation` endpoint
+- Parses `operationstatus` field for accurate state detection
+- No longer dependent on JavaScript rendering or CSS selectors
+
+### Added
+- Guardian IMS API integration (disaster.townsville.qld.gov.au)
+- Automatic timestamp parameter to prevent caching
+- Operation name and description in state attributes
+
+### Removed
+- BeautifulSoup HTML scraping
+- CSS selector support
+- Content hashing for change detection
+
+### Technical
+- Lightweight API-based monitoring (no Selenium/Playwright needed)
+- Directly reads `operationstatus` from JSON response
+- Maps Guardian IMS states to EOC states (Alert, Lean Forward, Stand Up, Stand Down, Inactive)
+
 ## [1.0.23] - 2025-12-27
 
 ### Removed

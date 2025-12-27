@@ -2,10 +2,10 @@
 import logging
 import asyncio
 import aiohttp
-from bs4 import BeautifulSoup
+import json
 from typing import Dict, List
 from datetime import datetime
-import hashlib
+import time
 
 logger = logging.getLogger(__name__)
 
@@ -27,8 +27,10 @@ class EOCMonitor:
         self.shared_state = shared_state
         self.check_interval = config.get('check_interval', 300)
         self.eoc_urls = config.get('eoc_urls', [])
-        self.page_hashes = {}  # Store content hashes to detect changes
         self.eoc_states = {}
+        
+        # Guardian IMS API endpoint for Townsville LDMG
+        self.guardian_api_url = "https://disaster.townsville.qld.gov.au/dashboard/imsOperation"
         
         logger.info(f"EOC Monitor initialized with {len(self.eoc_urls)} URL(s)")
         if self.eoc_urls:
@@ -56,48 +58,37 @@ class EOCMonitor:
             
         logger.info(f"Checking {len(self.eoc_urls)} EOC site(s)...")
         
-        for url_config in self.eoc_urls:
-            if isinstance(url_config, str):
-                url = url_config
-                selectors = {}
+        for url in self.eoc_urls:
+            if url and 'disaster.townsville.qld.gov.au' in url:
+                await self.check_guardian_ims()
             else:
-                url = url_config.get('url', '')
-                selectors = url_config.get('selectors', {})
-            
-            if url:
-                await self.check_site(url, selectors)
+                logger.warning(f"Unsupported EOC URL: {url}")
     
-    async def check_site(self, url: str, selectors: Dict):
-        """
-        Check a single EOC site for changes
+    async def check_guardian_ims(self):
+        """Check Guardian IMS API for Townsville LDMG status"""
+        # Add timestamp to prevent caching
+        url = f"{self.guardian_api_url}?t={int(time.time() * 1000)}"
         
-        Args:
-            url: URL to monitor
-            selectors: CSS selectors to extract specific content
-        """
-        logger.info(f"Checking EOC site: {url}")
+        logger.info(f"Checking Guardian IMS API: {url}")
         try:
             async with aiohttp.ClientSession() as session:
                 async with session.get(url, timeout=aiohttp.ClientTimeout(total=30)) as response:
                     if response.status == 200:
-                        html = await response.text()
-                        logger.info(f"Retrieved {len(html)} bytes from {url}")
-                        await self.process_page(url, html, selectors)
+                        data = await response.json()
+                        logger.info(f"Retrieved Guardian IMS data: {len(str(data))} bytes")
+                        await self.process_guardian_response(data)
                     else:
-                        logger.error(f"Failed to fetch {url}: {response.status}")
+                        logger.error(f"Failed to fetch Guardian IMS API: {response.status}")
         except Exception as e:
-            logger.error(f"Error checking {url}: {e}", exc_info=True)
+            logger.error(f"Error checking Guardian IMS: {e}", exc_info=True)
     
-    async def process_page(self, url: str, html: str, selectors: Dict):
+    async def process_guardian_response(self, data: Dict):
         """
-        Process page content and detect changes
+        Process Guardian IMS API response
         
         Args:
-            url: Page URL
-            html: HTML content
-            selectors: CSS selectors for content extraction
+            data: JSON response from Guardian IMS API
         """
-        soup = BeautifulSoup(html, 'html.parser')
         
         # Extract relevant content based on selectors
         if selectors:
@@ -106,136 +97,89 @@ class EOCMonitor:
         else:
             # Use full page text if no selectors provided
             content = soup.get_text(strip=True)
-            logger.debug(f"Extracted full page text: {len(content)} bytes")
-        
-        # Calculate content hash
-        content_hash = hashlib.md5(content.encode()).hexdigest()
-        
-        # Detect EOC state from content
-        detected_state = self.detect_eoc_state(content)
-        logger.info(f"Detected EOC state for {url}: {detected_state}")
-        
-        # Store/update current state
-        old_state = self.eoc_states.get(url, {}).get('state', 'inactive')
-        self.eoc_states[url] = {
-            'state': detected_state,
-            'activated': detected_state != 'inactive',
-            'last_check': datetime.now().isoformat(),
-            'content_preview': content[:200]
-        }
-        
-        # Check if content changed
-        if url in self.page_hashes:
-            if self.page_hashes[url] != content_hash:
-                logger.warning(f"CHANGE DETECTED on {url}: {old_state} -> {detected_state}")
-                if old_state != detected_state:
-                    logger.warning(f"STATE CHANGE on {url}: {old_state} -> {detected_state}")
-                    await self.trigger_eoc_routine(detected_state)
-                self.eoc_states[url]['last_change'] = datetime.now().isoformat()
-        else:
-            logger.info(f"First check for {url}, initial state: {detected_state}")
-        
-        self.page_hashes[url] = content_hash
-        await self.update_sensor()
+        try:
+            features = data.get('features', [])
+            if not features:
+                logger.warning("No features found in Guardian IMS response")
+                self.eoc_states.clear()
+                await self.update_sensor()
+                return
+            
+            # Extract operation status from first feature
+            feature = features[0]
+            properties = feature.get('properties', {})
+            
+            operation_status = properties.get('operationstatus', '').strip()
+            operation_name = properties.get('operationname', '').strip()
+            status_description = properties.get('statusdescription', '').strip()
+            
+            logger.info(f"Guardian IMS - Operation: {operation_name}, Status: {operation_status}")
+            
+            # Map Guardian IMS status to our EOC states
+            eoc_state = self.map_guardian_status(operation_status)
+            
+            # Store state
+            url = self.guardian_api_url
+            old_state = self.eoc_states.get(url, {}).get('state', 'inactive')
+            
+            self.eoc_states[url] = {
+                'state': eoc_state,
+                'activated': eoc_state != 'inactive',
+                'last_check': datetime.now().isoformat(),
+                'operation_name': operation_name,
+                'operation_status': operation_status,
+                'description': status_description[:200]  # Truncate long descriptions
+            }
+            
+            # Check for state change
+            if old_state != eoc_state:
+                logger.warning(f"LDMG STATE CHANGE: {old_state} -> {eoc_state}")
+                
+                # Send notification
+                await self.ha_client.send_notification(
+                    message=f"LDMG state changed: {old_state} → {eoc_state}\nOperation: {operation_name}\n\n{status_description[:200]}...",
+                    title=f"🚨 LDMG: {eoc_state.upper()}"
+                )
+                
+                # Trigger routine if activated
+                if eoc_state != 'inactive':
+                    await self.trigger_eoc_routine(eoc_state)
+            
+            await self.update_sensor()
+            
+        except Exception as e:
+            logger.error(f"Error processing Guardian IMS response: {e}", exc_info=True)
     
-    def extract_content(self, soup: BeautifulSoup, selectors: Dict) -> str:
+    def map_guardian_status(self, status: str) -> str:
         """
-        Extract specific content using CSS selectors
+        Map Guardian IMS operation status to our EOC states
         
         Args:
-            soup: BeautifulSoup object
-            selectors: Dictionary of CSS selectors
+            status: Guardian IMS operationstatus value
             
         Returns:
-            Extracted content as string
+            EOC state string
         """
-        content_parts = []
+        status_lower = status.lower().strip()
         
-        for key, selector in selectors.items():
-            elements = soup.select(selector)
-            for element in elements:
-                text = element.get_text(strip=True)
-                if text:
-                    content_parts.append(text)
-        
-        return '\n'.join(content_parts)
-    
-    async def handle_change(self, url: str, content: str, soup: BeautifulSoup):
-        """
-        Handle detected change on EOC site
-        
-        Args:
-            url: URL where change was detected
-            content: New content
-            soup: BeautifulSoup object
-        """
-        # Detect EOC state from content
-        eoc_state = self.detect_eoc_state(content)
-        old_state = self.eoc_states.get(url, {}).get('state', 'inactive')
-        
-        # Store state
-        self.eoc_states[url] = {
-            'state': eoc_state,
-            'activated': eoc_state != 'inactive',
-            'last_change': datetime.now().isoformat(),
-            'content_preview': content[:200]
+        # Map Guardian IMS statuses to our states
+        status_map = {
+            'stand up': 'stand up',
+            'standup': 'stand up',
+            'lean forward': 'lean forward',
+            'leanforward': 'lean forward',
+            'alert': 'alert',
+            'stand down': 'stand down',
+            'standdown': 'stand down',
+            'inactive': 'inactive',
+            'closed': 'inactive',
+            'complete': 'inactive'
         }
         
-        # Only notify if state actually changed
-        if eoc_state != old_state:
-            logger.warning(f"EOC STATE CHANGE: {url} - {old_state} → {eoc_state}")
-            
-            # Send notification
-            await self.ha_client.send_notification(
-                message=f"EOC state changed: {old_state} → {eoc_state}\n{url}\n\nPreview: {content[:200]}...",
-                title=f"🚨 EOC: {eoc_state.upper()}"
-            )
-            
-            # Trigger routine if activated
-            if eoc_state != 'inactive':
-                await self.trigger_eoc_routine(eoc_state)
-    
-    def detect_eoc_state(self, content: str) -> str:
-        """
-        Detect EOC state from page content
+        mapped_state = status_map.get(status_lower, 'inactive')
+        logger.info(f"Mapped Guardian status '{status}' to EOC state '{mapped_state}'")
         
-        Valid states (only shown when EOC is activated):
-        - stand up: EOC fully activated and operational (highest priority)
-        - lean forward: Preparing to activate
-        - alert: Initial activation, monitoring situation
-        - stand down: Deactivating or returning to normal
-        - inactive: No state keywords present (default)
-        
-        Args:
-            content: Page content to analyze
-            
-        Returns:
-            Detected state as string
-        """
-        content_lower = content.lower()
-        
-        # Log sample of content for debugging
-        logger.debug(f"Content sample (first 500 chars): {content[:500]}")
-        
-        # Check for specific states (order matters - check most specific first)
-        # These keywords only appear on the page when there's an actual EOC activation
-        if 'stand up' in content_lower or 'standup' in content_lower:
-            logger.info("Found 'stand up' keyword in content")
-            return 'stand up'
-        elif 'lean forward' in content_lower or 'leanforward' in content_lower:
-            logger.info("Found 'lean forward' keyword in content")
-            return 'lean forward'
-        elif 'stand down' in content_lower or 'standdown' in content_lower:
-            logger.info("Found 'stand down' keyword in content")
-            return 'stand down'
-        # Check for Status:Alert (LDMG website format)
-        elif 'status:alert' in content_lower or 'status: alert' in content_lower:
-            logger.info("Found 'Status:Alert' keyword in content")
-            return 'alert'
-        
-        # If none of the state keywords are found, EOC is inactive
-        logger.debug("No EOC state keywords found, returning 'inactive'")
-        return 'inactive'
+        return mapped_state
     
     async def trigger_eoc_routine(self, state: str):
         """
@@ -303,3 +247,4 @@ class EOCMonitor:
                     self.shared_state.get('weather_alerts', []),
                     self.eoc_states
                 )
+
