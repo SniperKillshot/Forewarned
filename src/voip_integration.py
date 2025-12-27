@@ -92,25 +92,15 @@ class AlertCall(pj.Call):
             temp_wav = tempfile.NamedTemporaryFile(suffix='.wav', delete=False)
             temp_wav.close()
             
-            # Try espeak-ng first (more likely to be available in Alpine)
-            try:
-                subprocess.run([
-                    'espeak-ng', '-w', temp_wav.name, text
-                ], check=True, capture_output=True)
-                logger.info(f"Generated TTS with espeak-ng: {temp_wav.name}")
-                return temp_wav.name
-            except (FileNotFoundError, subprocess.CalledProcessError):
-                pass
-            
-            # Fallback to espeak
+            # Use espeak (available in Alpine main repo)
             try:
                 subprocess.run([
                     'espeak', '-w', temp_wav.name, text
                 ], check=True, capture_output=True)
                 logger.info(f"Generated TTS with espeak: {temp_wav.name}")
                 return temp_wav.name
-            except (FileNotFoundError, subprocess.CalledProcessError):
-                logger.error("No TTS engine available (espeak-ng or espeak)")
+            except (FileNotFoundError, subprocess.CalledProcessError) as e:
+                logger.error(f"espeak TTS failed: {e}")
                 return None
                 
         except Exception as e:

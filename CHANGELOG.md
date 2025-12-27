@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.18] - 2025-12-27
+
+### Fixed
+- Changed from espeak-ng to espeak (available in Alpine stable)
+- Removed espeak-ng fallback logic
+- TTS now uses standard espeak package
+
 ## [1.0.17] - 2025-12-27
 
 ### Fixed

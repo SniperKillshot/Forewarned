@@ -1,6 +1,6 @@
 {
   "name": "Forewarned",
-  "version": "1.0.17",
+  "version": "1.0.18",
   "slug": "forewarned",
   "description": "Weather alerting and EOC state monitoring with automated routine activation",
   "arch": ["armhf", "armv7", "aarch64", "amd64", "i386"],
