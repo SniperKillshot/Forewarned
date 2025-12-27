@@ -228,9 +228,9 @@ class EOCMonitor:
         elif 'stand down' in content_lower or 'standdown' in content_lower:
             logger.info("Found 'stand down' keyword in content")
             return 'stand down'
-        # Only match 'alert' if it's specifically about EOC
-        elif 'eoc' in content_lower and 'alert' in content_lower:
-            logger.info("Found 'eoc' + 'alert' keywords in content")
+        # Check for Status:Alert (LDMG website format)
+        elif 'status:alert' in content_lower or 'status: alert' in content_lower:
+            logger.info("Found 'Status:Alert' keyword in content")
             return 'alert'
         
         # If none of the state keywords are found, EOC is inactive

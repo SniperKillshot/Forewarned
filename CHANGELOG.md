@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.21] - 2025-12-27
+
+### Changed
+- Alert state detection now looks for "Status:Alert" or "Status: Alert"
+- Removed requirement for "eoc" + "alert" keywords
+- Matches LDMG website format
+
 ## [1.0.20] - 2025-12-27
 
 ### Added
