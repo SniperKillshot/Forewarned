@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.0.34] - 2025-12-27
+### Added
+- Configurable TTS voice (en-us, en-gb, en-au, en-sc)
+- Configurable TTS speech speed (80-450, default 160)
+- New addon options: voip_tts_voice and voip_tts_speed
+
 ## [1.0.33] - 2025-12-27
 ### Added
 - Automatic call hangup after TTS playback completes

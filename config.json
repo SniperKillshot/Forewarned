@@ -1,6 +1,6 @@
 {
   "name": "Forewarned",
-  "version": "1.0.33",
+  "version": "1.0.34",
   "slug": "forewarned",
   "description": "Weather alerting and EOC state monitoring with automated routine activation",
   "arch": ["armhf", "armv7", "aarch64", "amd64", "i386"],
@@ -24,7 +24,9 @@
     "voip_webhook_username": "",
     "voip_webhook_password": "",
     "voip_webhook_token": "",
-    "voip_alert_numbers": []
+    "voip_alert_numbers": [],
+    "voip_tts_voice": "en-us",
+    "voip_tts_speed": 160
   },
   "schema": {
     "check_interval": "int",
@@ -42,7 +44,9 @@
     "voip_webhook_username": "str?",
     "voip_webhook_password": "password?",
     "voip_webhook_token": "password?",
-    "voip_alert_numbers": ["str"]
+    "voip_alert_numbers": ["str"],
+    "voip_tts_voice": "list(en-us|en-gb|en-au|en-sc)?",
+    "voip_tts_speed": "int(80,450)?"
   },
   "ports": {
     "5000/tcp": 5000

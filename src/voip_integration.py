@@ -105,10 +105,13 @@ class AlertCall(pj.Call):
             
             # Use espeak (available in Alpine main repo)
             try:
+                voice = self.voip.tts_voice if self.voip else 'en-us'
+                speed = self.voip.tts_speed if self.voip else 160
+                
                 subprocess.run([
-                    'espeak', '-w', temp_wav.name, text
+                    'espeak', '-v', voice, '-s', str(speed), '-w', temp_wav.name, text
                 ], check=True, capture_output=True)
-                logger.info(f"Generated TTS with espeak: {temp_wav.name}")
+                logger.info(f"Generated TTS with espeak (voice={voice}, speed={speed}): {temp_wav.name}")
                 return temp_wav.name
             except (FileNotFoundError, subprocess.CalledProcessError) as e:
                 logger.error(f"espeak TTS failed: {e}")
@@ -232,6 +235,8 @@ class VOIPIntegration:
         self.backend = config.get('backend', 'webhook')  # 'sip', 'webhook', 'ha_notify'
         self.registration_active = False  # Track SIP registration status
         self.active_calls = {}  # Store references to active Call objects
+        self.tts_voice = config.get('tts_voice', 'en-us')  # TTS voice variant
+        self.tts_speed = config.get('tts_speed', 160)  # TTS speed (80-450)
         
         if not self.enabled:
             logger.info("VOIP integration disabled")
