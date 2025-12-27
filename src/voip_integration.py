@@ -5,6 +5,8 @@ from typing import Optional, Dict, Callable
 import os
 import tempfile
 import subprocess
+import wave
+import threading
 
 logger = logging.getLogger(__name__)
 
@@ -119,6 +121,17 @@ class AlertCall(pj.Call):
     def _play_wav_file(self, wav_path: str):
         """Play WAV file to call"""
         try:
+            # Get WAV file duration
+            try:
+                with wave.open(wav_path, 'rb') as wav_file:
+                    frames = wav_file.getnframes()
+                    rate = wav_file.getframerate()
+                    duration = frames / float(rate)
+                    logger.info(f"WAV file duration: {duration:.2f} seconds")
+            except Exception as e:
+                logger.warning(f"Could not determine WAV duration: {e}, using default 10s")
+                duration = 10.0
+            
             # Create WAV player
             player = pj.AudioMediaPlayer()
             player.createPlayer(wav_path, pj.PJMEDIA_FILE_NO_LOOP)
@@ -131,6 +144,21 @@ class AlertCall(pj.Call):
                     player.startTransmit(aud_med)
                     self.tts_player = player
                     logger.info(f"Playing WAV file to call: {wav_path}")
+                    
+                    # Schedule hangup after playback completes (add 2 seconds buffer)
+                    hangup_delay = duration + 2.0
+                    logger.info(f"Will hang up call in {hangup_delay:.2f} seconds after TTS playback")
+                    
+                    def hangup_call():
+                        try:
+                            logger.info("TTS playback complete - hanging up call")
+                            self.hangup(pj.CallOpParam())
+                        except Exception as e:
+                            logger.error(f"Error hanging up call: {e}")
+                    
+                    # Schedule hangup in separate thread
+                    timer = threading.Timer(hangup_delay, hangup_call)
+                    timer.start()
                     break
                     
         except Exception as e:

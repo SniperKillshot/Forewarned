@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.33] - 2025-12-27
+### Added
+- Automatic call hangup after TTS playback completes
+- WAV file duration detection for precise hangup timing
+- 2-second buffer after playback before hangup
+- Threading-based timer for scheduled hangup
+
 ## [1.0.32] - 2025-12-27
 ### Fixed
 - Increased SIP registration wait timeout from 10 to 30 seconds to prevent 401 errors
