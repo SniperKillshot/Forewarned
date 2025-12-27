@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.17] - 2025-12-27
+
+### Fixed
+- Added debug logging for EOC state updates to shared_state
+- Log number of EOC sites and current state when updating
+- Added debug log to /api/status endpoint
+- Helps diagnose LDMG status not updating issues
+
 ## [1.0.16] - 2025-12-27
 
 ### Fixed

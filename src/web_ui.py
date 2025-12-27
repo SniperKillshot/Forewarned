@@ -74,9 +74,11 @@ def create_app():
     @app.route('/api/status')
     def api_status():
         """Get current status"""
+        eoc_states = app_state.get('eoc_states', {})
+        logger.debug(f"/api/status called: {len(eoc_states)} EOC states")
         return jsonify({
             'weather_alerts': app_state['weather_alerts'],
-            'eoc_states': app_state['eoc_states'],
+            'eoc_states': eoc_states,
             'local_alert_state': app_state['local_alert_state'],
             'last_update': app_state['last_update']
         })

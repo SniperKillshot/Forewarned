@@ -256,6 +256,9 @@ class EOCMonitor:
             self.shared_state['eoc_states'] = self.eoc_states
             self.shared_state['last_update'] = datetime.now().isoformat()
             
+            logger.info(f"Updated shared_state with EOC states: {len(self.eoc_states)} sites, current_state={current_state}")
+            logger.debug(f"EOC states detail: {self.eoc_states}")
+            
             # Trigger local alert manager to evaluate state
             if 'alert_manager' in self.shared_state:
                 await self.shared_state['alert_manager'].update_and_trigger(
