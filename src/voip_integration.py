@@ -364,18 +364,31 @@ class VOIPIntegration:
         
         # Wait for registration with timeout
         if not self.registration_active:
-            logger.info("SIP not yet registered. Waiting up to 10 seconds for registration...")
-            max_wait = 10  # seconds
+            logger.info("SIP not yet registered. Waiting up to 30 seconds for registration...")
+            max_wait = 30  # seconds - increased to allow more time for registration
             waited = 0
             while not self.registration_active and waited < max_wait:
-                await asyncio.sleep(0.5)
-                waited += 0.5
+                await asyncio.sleep(1.0)
+                waited += 1.0
+                if waited % 5 == 0:
+                    logger.info(f"Still waiting for SIP registration... ({waited}/{max_wait}s)")
             
             if not self.registration_active:
                 logger.error(f"SIP registration timeout after {max_wait} seconds - cannot make call")
                 return False
             
             logger.info("SIP registration confirmed - proceeding with call")
+        
+        # Additional safety: double-check account is still valid
+        try:
+            ai = self.account.getInfo()
+            if not ai.regIsActive:
+                logger.error("SIP registration no longer active - cannot make call")
+                return False
+            logger.info(f"SIP account verified: {ai.regStatusText}")
+        except Exception as e:
+            logger.error(f"Error checking SIP registration status: {e}")
+            return False
         
         try:
             # Create call URI

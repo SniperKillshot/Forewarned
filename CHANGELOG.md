@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.32] - 2025-12-27
+### Fixed
+- Increased SIP registration wait timeout from 10 to 30 seconds to prevent 401 errors
+- Added periodic status logging during registration wait (every 5 seconds)
+- Added double-check of account registration status before making calls
+- Verify regIsActive flag to prevent calls with stale registration
+
 ## [1.0.31] - 2025-12-27
 ### Fixed
 - Store references to active Call objects to prevent garbage collection
