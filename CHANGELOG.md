@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.31] - 2025-12-27
+### Fixed
+- Store references to active Call objects to prevent garbage collection
+- Fixed 603 Decline issue - calls were being immediately destroyed after answer
+- Added active_calls dictionary to maintain call object lifecycle
+- Clean up call references when calls disconnect
+
 ## [1.0.30] - 2025-12-27
 ### Fixed
 - Added async wait (up to 10 seconds) for SIP registration before making outbound calls

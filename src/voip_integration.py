@@ -44,11 +44,20 @@ class AlertCall(pj.Call):
             self._play_tts_message()
         elif ci.state == pj.PJSIP_INV_STATE_DISCONNECTED:
             logger.info(f"Call ended: {ci.lastReason}")
+            
+            # Clean up TTS player
             if self.tts_player:
                 try:
                     self.tts_player = None
                 except:
                     pass
+            
+            # Remove from active calls
+            if self.voip and hasattr(self.voip, 'active_calls'):
+                call_id = ci.id
+                if call_id in self.voip.active_calls:
+                    del self.voip.active_calls[call_id]
+                    logger.info(f"Removed call {call_id} from active calls")
     
     def onCallMediaState(self, prm):
         """Callback when media state changes"""
@@ -155,6 +164,10 @@ class AlertAccount(pj.Account):
         # Create call object - this takes ownership of the call
         call = AlertCall(self, prm.callId, self.voip)
         
+        # Store reference to prevent garbage collection
+        if self.voip:
+            self.voip.active_calls[prm.callId] = call
+        
         # Get call info
         ci = call.getInfo()
         logger.info(f"Incoming call from {ci.remoteUri}")
@@ -190,6 +203,7 @@ class VOIPIntegration:
         self.enabled = config.get('enabled', False)
         self.backend = config.get('backend', 'webhook')  # 'sip', 'webhook', 'ha_notify'
         self.registration_active = False  # Track SIP registration status
+        self.active_calls = {}  # Store references to active Call objects
         
         if not self.enabled:
             logger.info("VOIP integration disabled")
@@ -375,6 +389,10 @@ class VOIPIntegration:
             
             # Make the call
             call.makeCall(call_uri, call_param)
+            
+            # Store reference to prevent garbage collection
+            ci = call.getInfo()
+            self.active_calls[ci.id] = call
             
             logger.info(f"SIP call initiated to {call_uri} with TTS playback")
             
