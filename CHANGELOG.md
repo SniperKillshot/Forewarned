@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.0.27] - 2025-12-27
+
+### Fixed
+- PJSUA audio device error in Docker container (PJMEDIA_EAUD_NODEFDEV)
+- Configured PJSUA to use null audio devices for headless operation
+- Disabled VAD and echo cancellation for containerized environment
+
+### Changed
+- VoIP integration now works in headless Docker environment
+- No audio hardware required for SIP calls
+
 ## [1.0.26] - 2025-12-27
 
 ### Changed

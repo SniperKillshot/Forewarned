@@ -222,14 +222,28 @@ class VOIPIntegration:
             self.ep = pj.Endpoint()
             self.ep.libCreate()
             
-            # Initialize endpoint with logging
+            # Initialize endpoint with logging and null audio device
             ep_cfg = pj.EpConfig()
             ep_cfg.logConfig.level = 5  # 0=none, 6=max verbosity
             ep_cfg.logConfig.consoleLevel = 5
             ep_cfg.logConfig.msgLogging = 1  # Enable SIP message logging
+            
+            # Configure null audio device for headless operation
+            ep_cfg.medConfig.noVad = True  # Disable voice activity detection
+            ep_cfg.medConfig.ecTailLen = 0  # Disable echo cancellation
+            
             self.ep.libInit(ep_cfg)
             
             logger.info("PJSUA2 initialized with SIP message logging enabled")
+            
+            # Set null audio device (no actual hardware needed)
+            try:
+                aud_dev_mgr = self.ep.audDevManager()
+                # Set to null device (-1 for capture, -2 for playback means null device)
+                aud_dev_mgr.setNullDev()
+                logger.info("Using null audio device for headless operation")
+            except Exception as e:
+                logger.warning(f"Could not set null audio device: {e}")
             
             # Create SIP transport
             sipTpConfig = pj.TransportConfig()
