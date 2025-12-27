@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.0.22] - 2025-12-27
+
+### Added
+- LDMG dashboard iframe embed in web UI
+- Live view of disaster.townsville.qld.gov.au dashboard
+- Responsive iframe sizing (800px desktop, 600px mobile)
+
+### Note
+- LDMG automation still requires manual switches due to JavaScript-rendered dashboard
+- Iframe provides visual monitoring but cannot trigger automations
+
 ## [1.0.21] - 2025-12-27
 
 ### Changed
