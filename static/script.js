@@ -121,13 +121,20 @@ function updateEOCBanner(states) {
     // Find highest priority state
     const priorityStates = ['stand up', 'lean forward', 'alert', 'stand down', 'inactive'];
     let currentState = 'inactive';
-    let activatedAreas = [];
+    let stateDescription = '';
     
     for (const priority of priorityStates) {
         const matchingStates = stateArray.filter(([_, s]) => s.state === priority);
         if (matchingStates.length > 0) {
             currentState = priority;
-            activatedAreas = matchingStates.map(([area, _]) => area);
+            // Get description from the first matching state
+            const stateData = matchingStates[0][1];
+            if (stateData.description) {
+                // Strip HTML tags and decode entities
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = stateData.description;
+                stateDescription = tempDiv.textContent || tempDiv.innerText || '';
+            }
             break;
         }
     }
@@ -142,13 +149,9 @@ function updateEOCBanner(states) {
     // Update state text
     stateText.textContent = getEOCStateLabel(currentState).toUpperCase();
     
-    // Update detail section
+    // Update detail section with description
     if (detailDiv) {
-        if (currentState !== 'inactive' && activatedAreas.length > 0) {
-            detailDiv.textContent = activatedAreas.join(', ');
-        } else {
-            detailDiv.textContent = '';
-        }
+        detailDiv.textContent = stateDescription;
     }
 }
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.26] - 2025-12-27
+
+### Changed
+- LDMG status banner now displays operation description from Guardian IMS API
+- HTML tags are stripped from description for clean display
+- Replaces URL display with actual status message from TLDMG
+
 ## [1.0.25] - 2025-12-27
 
 ### Fixed
