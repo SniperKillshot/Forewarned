@@ -115,15 +115,7 @@ class LocalAlertManager:
             else:
                 logger.info(f"Found existing manual switch: {entity_id}")
         
-        if m# Try MQTT first if available
-            if self.mqtt_client and self.mqtt_client.connected:
-                switch_id = f"manual_{level}"
-                state = self.mqtt_client.get_state(switch_id)
-                if state:
-                    return level, f"Manual override: {level.upper()}"
-            
-            # Fallback to HA REST API
-            issing_switches:
+        if missing_switches:
             logger.warning("Temporary switches created without unique IDs. Enable MQTT for persistent switches.")
         else:
             logger.info("All manual override switches found")
@@ -133,6 +125,19 @@ class LocalAlertManager:
         Check if any manual override switches are active
         
         Returns:
+            Tuple of (level, reason) or (None, None) if no overrides active
+        """
+        # Check switches in priority order (highest to lowest)
+        for level in ['emergency', 'warning', 'watch', 'advisory']:
+            # Try MQTT first if available
+            if self.mqtt_client and self.mqtt_client.connected:
+                switch_id = f"manual_{level}"
+                state = self.mqtt_client.get_state(switch_id)
+                if state:
+                    return level, f"Manual override: {level.upper()}"
+            
+            # Fallback to HA REST API
+            entity_id = self.manual_switches.get(level)
             Tuple of (level, reason) or (None, None) if no overrides active
         """
         # Check switches in priority order (highest to lowest)
