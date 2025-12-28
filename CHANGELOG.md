@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.0.44] - 2025-12-28
+### Changed
+- Improved MQTT connection logging with detailed error messages
+- Added connection status feedback and troubleshooting hints
+- Enhanced error handling for broker connection failures
+- Added MQTT protocol version specification (MQTTv3.1.1)
+
+### Fixed
+- Better diagnostic messages for MQTT connection issues
+
 ## [1.0.43] - 2025-12-28
 ### Fixed
 - Removed additional duplicate code at end of _check_manual_overrides method

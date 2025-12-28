@@ -28,8 +28,17 @@ class MQTTIntegration:
         
     def on_connect(self, client, userdata, flags, rc):
         """Callback when connected to MQTT broker"""
+        rc_messages = {
+            0: "Connection successful",
+            1: "Connection refused - incorrect protocol version",
+            2: "Connection refused - invalid client identifier",
+            3: "Connection refused - server unavailable",
+            4: "Connection refused - bad username or password",
+            5: "Connection refused - not authorized"
+        }
+        
         if rc == 0:
-            logger.info("Connected to MQTT broker")
+            logger.info(f"✓ MQTT broker connection successful")
             self.connected = True
             # Subscribe to all command topics
             for switch_id in self.switches:
@@ -37,7 +46,8 @@ class MQTTIntegration:
                 client.subscribe(command_topic)
                 logger.info(f"Subscribed to {command_topic}")
         else:
-            logger.error(f"Failed to connect to MQTT broker: {rc}")
+            error_msg = rc_messages.get(rc, f"Unknown error code {rc}")
+            logger.error(f"✗ MQTT connection failed: {error_msg}")
             self.connected = False
             
     def on_disconnect(self, client, userdata, rc):
@@ -78,30 +88,43 @@ class MQTTIntegration:
             username = self.config.get('mqtt_username', '')
             password = self.config.get('mqtt_password', '')
             
-            self.client = mqtt.Client(client_id="forewarned_addon")
+            logger.info(f"MQTT Configuration: broker={broker}, port={port}, username={'(set)' if username else '(none)'}")
+            
+            self.client = mqtt.Client(client_id="forewarned_addon", protocol=mqtt.MQTTv311)
             
             if username and password:
+                logger.info("Setting MQTT authentication credentials")
                 self.client.username_pw_set(username, password)
+            elif username:
+                logger.warning("MQTT username set but no password provided")
                 
             self.client.on_connect = self.on_connect
             self.client.on_disconnect = self.on_disconnect
             self.client.on_message = self.on_message
             
-            logger.info(f"Connecting to MQTT broker at {broker}:{port}")
-            self.client.connect_async(broker, port, 60)
-            self.client.loop_start()
+            logger.info(f"Attempting to connect to MQTT broker at {broker}:{port}...")
+            try:
+                self.client.connect_async(broker, port, 60)
+                self.client.loop_start()
+            except Exception as conn_err:
+                logger.error(f"Failed to initiate MQTT connection: {conn_err}")
+                logger.error(f"Check that the broker '{broker}' is reachable and port {port} is correct")
+                return False
             
             # Wait for connection
-            for _ in range(30):  # 30 second timeout
+            for i in range(30):  # 30 second timeout
                 if self.connected:
+                    logger.info(f"MQTT connection established after {i+1} seconds")
                     return True
                 await asyncio.sleep(1)
                 
-            logger.error("Timeout waiting for MQTT connection")
+            logger.error(f"Timeout waiting for MQTT connection to {broker}:{port}")
+            logger.error("Possible issues: broker not running, incorrect hostname/IP, firewall blocking connection")
+            logger.error("Try using the broker's IP address instead of hostname if using 'core-mosquitto'")
             return False
             
         except Exception as e:
-            logger.error(f"Error connecting to MQTT broker: {e}")
+            logger.error(f"Error connecting to MQTT broker: {e}", exc_info=True)
             return False
             
     def publish_discovery(self, switch_id: str, name: str, icon: str = "mdi:alert"):
@@ -141,7 +164,7 @@ class MQTTIntegration:
                     "name": "Forewarned",
                     "model": "Weather & EOC Alert System",
                     "manufacturer": "Forewarned",
-                    "sw_version": "1.0.43"
+                    "sw_version": "1.0.44"
                 }
             }
             
