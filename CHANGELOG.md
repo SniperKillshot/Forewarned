@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.41] - 2025-12-28
+### Fixed
+- Syntax error in local_alert_manager.py from corrupted code merge
+
 ## [1.0.40] - 2025-12-28
 ### Added
 - MQTT discovery integration for automatic switch creation with unique IDs
