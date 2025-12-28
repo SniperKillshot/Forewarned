@@ -150,13 +150,6 @@ class LocalAlertManager:
                 continue
         
         return None, None
-                if state and state.get('state') == 'on':
-                    return level, f"Manual override: {level.upper()}"
-            except Exception as e:
-                logger.debug(f"Could not check manual switch {entity_id}: {e}")
-                continue
-        
-        return None, None
     
     def _evaluate_conditions(self, conditions: Dict, weather_alerts: List[Dict], eoc_states: Dict) -> bool:
         """

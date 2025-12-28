@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.43] - 2025-12-28
+### Fixed
+- Removed additional duplicate code at end of _check_manual_overrides method
+
 ## [1.0.42] - 2025-12-28
 ### Fixed
 - Duplicate code in _check_manual_overrides causing unterminated string literal
