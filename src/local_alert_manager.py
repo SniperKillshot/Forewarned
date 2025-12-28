@@ -43,12 +43,12 @@ class LocalAlertManager:
             'emergency': 4
         }
         
-        # Manual override switch entity IDs
+        # Manual override switch entity IDs (using switch domain instead of input_boolean)
         self.manual_switches = {
-            'advisory': 'input_boolean.forewarned_manual_advisory',
-            'watch': 'input_boolean.forewarned_manual_watch',
-            'warning': 'input_boolean.forewarned_manual_warning',
-            'emergency': 'input_boolean.forewarned_manual_emergency'
+            'advisory': 'switch.forewarned_manual_advisory',
+            'watch': 'switch.forewarned_manual_watch',
+            'warning': 'switch.forewarned_manual_warning',
+            'emergency': 'switch.forewarned_manual_emergency'
         }
     
     async def initialize_manual_switches(self):

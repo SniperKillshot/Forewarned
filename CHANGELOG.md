@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.0.38] - 2025-12-28
+### Changed
+- Changed manual override entities from input_boolean to switch domain
+- Now uses switch.forewarned_manual_* instead of input_boolean.forewarned_manual_*
+- Switches can be managed through HA UI with unique IDs
+
 ## [1.0.37] - 2025-12-28
 ### Added
 - Manual override switches for all alert levels
