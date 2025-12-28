@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.45] - 2025-12-29
+### Changed
+- Added username/password status logging to MQTT config loading for diagnostics
+
 ## [1.0.44] - 2025-12-28
 ### Changed
 - Improved MQTT connection logging with detailed error messages

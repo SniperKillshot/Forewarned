@@ -172,7 +172,7 @@ def load_config():
                 'username': default_config.get('mqtt_username', ''),
                 'password': default_config.get('mqtt_password', '')
             }
-            logger.info(f"MQTT configuration loaded: enabled={default_config['mqtt']['enabled']}, broker={default_config['mqtt']['broker']}")
+            logger.info(f"MQTT configuration loaded: enabled={default_config['mqtt']['enabled']}, broker={default_config['mqtt']['broker']}, username={'(set)' if default_config['mqtt']['username'] else '(none)'}, password={'(set)' if default_config['mqtt']['password'] else '(none)'}")
             
     except Exception as e:
         logger.error(f"Error loading configuration: {e}")
