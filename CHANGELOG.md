@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.37] - 2025-12-28
+### Added
+- Manual override switches for all alert levels
+- New entities: input_boolean.forewarned_manual_advisory/watch/warning/emergency
+- Manual overrides take highest priority over automated triggers
+- Switches automatically initialized on addon startup
+
 ## [1.0.36] - 2025-12-28
 ### Fixed
 - Added unique IDs to all Home Assistant entities for UI management

@@ -51,6 +51,41 @@ class LocalAlertManager:
             'emergency': 'input_boolean.forewarned_manual_emergency'
         }
     
+    async def initialize_manual_switches(self):
+        """Create manual override switches in Home Assistant"""
+        switch_configs = {
+            'advisory': {
+                'name': 'Forewarned Manual Advisory',
+                'icon': 'mdi:information-outline'
+            },
+            'watch': {
+                'name': 'Forewarned Manual Watch',
+                'icon': 'mdi:eye-outline'
+            },
+            'warning': {
+                'name': 'Forewarned Manual Warning',
+                'icon': 'mdi:alert'
+            },
+            'emergency': {
+                'name': 'Forewarned Manual Emergency',
+                'icon': 'mdi:alarm-light'
+            }
+        }
+        
+        for level, entity_id in self.manual_switches.items():
+            config = switch_configs[level]
+            await self.ha_client.set_state(
+                entity_id,
+                'off',
+                {
+                    'friendly_name': config['name'],
+                    'icon': config['icon'],
+                    'editable': True
+                },
+                unique_id=f'forewarned_manual_{level}'
+            )
+            logger.info(f"Initialized manual switch: {entity_id}")
+    
     async def _check_manual_overrides(self) -> tuple[Optional[str], Optional[str]]:
         """
         Check if any manual override switches are active

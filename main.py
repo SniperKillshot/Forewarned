@@ -50,6 +50,10 @@ async def run_monitors():
         voip_integration=voip_integration
     )
     
+    # Initialize manual override switches in HA
+    await alert_manager.initialize_manual_switches()
+    logger.info("Manual override switches initialized")
+    
     # Store alert manager in app state for access by monitors
     app_state['alert_manager'] = alert_manager
     app_state['voip_integration'] = voip_integration
