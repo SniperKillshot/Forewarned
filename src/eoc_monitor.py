@@ -222,7 +222,8 @@ class EOCMonitor:
         await self.ha_client.set_state(
             'binary_sensor.forewarned_eoc_active',
             state,
-            attributes
+            attributes,
+            unique_id='forewarned_eoc_active'
         )
         
         # Update web UI shared state

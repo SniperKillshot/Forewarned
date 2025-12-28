@@ -280,7 +280,8 @@ class LocalAlertManager:
                 'triggered_by': ', '.join(state['triggered_by']),
                 'timestamp': state['timestamp'],
                 'device_class': 'safety'
-            }
+            },
+            unique_id='forewarned_local_alert'
         )
         
         # Individual level sensors for easier automation triggers
@@ -298,7 +299,8 @@ class LocalAlertManager:
                     'triggered_by': ', '.join(state['triggered_by']) if is_active else '',
                     'timestamp': state['timestamp'] if is_active else None,
                     'device_class': 'safety'
-                }
+                },
+                unique_id=f'forewarned_alert_{level_name}'
             )
         
         # Alert level as a sensor (text state) - USE THIS FOR AUTOMATIONS
@@ -312,7 +314,8 @@ class LocalAlertManager:
                 'reason': state['reason'],
                 'triggered_by': ', '.join(state['triggered_by']),
                 'timestamp': state['timestamp']
-            }
+            },
+            unique_id='forewarned_alert_level'
         )
     
     def _get_icon_for_level(self, level: str) -> str:

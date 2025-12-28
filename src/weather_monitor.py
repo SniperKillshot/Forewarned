@@ -469,5 +469,6 @@ class WeatherMonitor:
         await self.ha_client.set_state(
             'binary_sensor.forewarned_weather_alert',
             state,
-            attributes
+            attributes,
+            unique_id='forewarned_weather_alert'
         )

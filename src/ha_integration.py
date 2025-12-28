@@ -72,7 +72,7 @@ class HomeAssistantClient:
             logger.error(f"Error getting state for {entity_id}: {e}")
             return None
     
-    async def set_state(self, entity_id: str, state: str, attributes: Optional[Dict] = None):
+    async def set_state(self, entity_id: str, state: str, attributes: Optional[Dict] = None, unique_id: Optional[str] = None):
         """
         Set state of an entity
         
@@ -80,12 +80,17 @@ class HomeAssistantClient:
             entity_id: Entity ID to update
             state: New state value
             attributes: Optional attributes
+            unique_id: Optional unique ID for the entity (enables UI management)
         """
         url = f'{self.base_url}/states/{entity_id}'
         data = {
             'state': state,
             'attributes': attributes or {}
         }
+        
+        # Add unique_id if provided (allows entity customization in UI)
+        if unique_id:
+            data['attributes']['unique_id'] = unique_id
         
         try:
             async with aiohttp.ClientSession() as session:

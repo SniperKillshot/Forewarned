@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.0.36] - 2025-12-28
+### Fixed
+- Added unique IDs to all Home Assistant entities for UI management
+- Entities can now be customized through Home Assistant UI
+- Affects: binary_sensor.forewarned_local_alert, all alert level sensors, weather sensor, EOC sensor
+
 ## [1.0.35] - 2025-12-27
 ### Fixed
 - TTS voice and speed settings now properly loaded from addon options
