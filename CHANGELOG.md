@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.39] - 2025-12-28
+### Changed
+- Manual switches now check for existing entities before creating temporary states
+- Added detailed logging with instructions to create switches via HA UI Helpers
+- Updated MANUAL_SWITCHES.md with clear instructions for creating switches with unique IDs
+- Temporary switches created as fallback, but users should create proper Helper entities
+
 ## [1.0.38] - 2025-12-28
 ### Changed
 - Changed manual override entities from input_boolean to switch domain

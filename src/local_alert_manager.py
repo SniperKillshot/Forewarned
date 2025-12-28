@@ -52,7 +52,7 @@ class LocalAlertManager:
         }
     
     async def initialize_manual_switches(self):
-        """Create manual override switches in Home Assistant"""
+        """Check for and initialize manual override switches in Home Assistant"""
         switch_configs = {
             'advisory': {
                 'name': 'Forewarned Manual Advisory',
@@ -72,19 +72,37 @@ class LocalAlertManager:
             }
         }
         
+        missing_switches = []
+        
         for level, entity_id in self.manual_switches.items():
-            config = switch_configs[level]
-            await self.ha_client.set_state(
-                entity_id,
-                'off',
-                {
-                    'friendly_name': config['name'],
-                    'icon': config['icon'],
-                    'editable': True
-                },
-                unique_id=f'forewarned_manual_{level}'
-            )
-            logger.info(f"Initialized manual switch: {entity_id}")
+            # Check if switch already exists
+            state = await self.ha_client.get_state(entity_id)
+            if not state:
+                missing_switches.append(entity_id)
+                # Create a temporary state to make it visible
+                config = switch_configs[level]
+                await self.ha_client.set_state(
+                    entity_id,
+                    'off',
+                    {
+                        'friendly_name': config['name'],
+                        'icon': config['icon'],
+                        'note': 'Create this as a Toggle Helper in HA UI for persistent unique ID'
+                    }
+                )
+            else:
+                logger.info(f"Found existing manual switch: {entity_id}")
+        
+        if missing_switches:
+            logger.warning("Manual override switches not found. To create them with unique IDs:")
+            logger.warning("1. Go to Settings > Devices & Services > Helpers")
+            logger.warning("2. Click '+ CREATE HELPER' > Toggle")
+            logger.warning("3. Create switches with these exact entity IDs:")
+            for switch in missing_switches:
+                logger.warning(f"   - {switch}")
+            logger.warning("Temporary switches created, but they won't persist across HA restarts.")
+        else:
+            logger.info("All manual override switches found")
     
     async def _check_manual_overrides(self) -> tuple[Optional[str], Optional[str]]:
         """

@@ -10,6 +10,7 @@ RUN apk add --no-cache \
     py3-yaml \
     py3-requests \
     py3-flask \
+    py3-paho-mqtt \
     espeak
 
 # Install py3-pjsua from edge repository (VoIP support)

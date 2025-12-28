@@ -2,7 +2,23 @@
 
 Forewarned supports manual override switches that allow you to manually activate alert levels regardless of weather or EOC conditions. This is useful for testing, drills, or other manual activations.
 
-## Setup
+## Important: Creating Switches with Unique IDs
+
+**Note:** Switches created via the REST API cannot have unique IDs. To create switches that are manageable through the Home Assistant UI, you must create them manually.
+
+### Method 1: Using Home Assistant UI (Recommended)
+
+1. Go to **Settings** > **Devices & Services** > **Helpers**
+2. Click **+ CREATE HELPER**
+3. Select **Toggle**
+4. Create each switch with these exact entity IDs:
+
+   - **Entity ID:** `switch.forewarned_manual_advisory` (or `input_boolean.forewarned_manual_advisory`)
+   - **Entity ID:** `switch.forewarned_manual_watch` (or `input_boolean.forewarned_manual_watch`)
+   - **Entity ID:** `switch.forewarned_manual_warning` (or `input_boolean.forewarned_manual_warning`)
+   - **Entity ID:** `switch.forewarned_manual_emergency` (or `input_boolean.forewarned_manual_emergency`)
+
+### Method 2: Using configuration.yaml
 
 Add the following to your Home Assistant `configuration.yaml`:
 
