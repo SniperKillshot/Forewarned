@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.42] - 2025-12-28
+### Fixed
+- Duplicate code in _check_manual_overrides causing unterminated string literal
+
 ## [1.0.41] - 2025-12-28
 ### Fixed
 - Syntax error in local_alert_manager.py from corrupted code merge
