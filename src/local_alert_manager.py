@@ -138,16 +138,18 @@ class LocalAlertManager:
             
             # Fallback to HA REST API
             entity_id = self.manual_switches.get(level)
-            Tuple of (level, reason) or (None, None) if no overrides active
-        """
-        # Check switches in priority order (highest to lowest)
-        for level in ['emergency', 'warning', 'watch', 'advisory']:
-            entity_id = self.manual_switches.get(level)
             if not entity_id:
                 continue
             
             try:
                 state = await self.ha_client.get_state(entity_id)
+                if state and state.get('state') == 'on':
+                    return level, f"Manual override: {level.upper()}"
+            except Exception as e:
+                logger.debug(f"Could not check manual switch {entity_id}: {e}")
+                continue
+        
+        return None, None
                 if state and state.get('state') == 'on':
                     return level, f"Manual override: {level.upper()}"
             except Exception as e:
