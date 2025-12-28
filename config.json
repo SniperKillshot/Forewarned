@@ -1,6 +1,6 @@
 {
   "name": "Forewarned",
-  "version": "1.0.39",
+  "version": "1.0.40",
   "slug": "forewarned",
   "description": "Weather alerting and EOC state monitoring with automated routine activation",
   "arch": ["armhf", "armv7", "aarch64", "amd64", "i386"],
@@ -26,7 +26,12 @@
     "voip_webhook_token": "",
     "voip_alert_numbers": [],
     "voip_tts_voice": "en-us",
-    "voip_tts_speed": 160
+    "voip_tts_speed": 160,
+    "mqtt_enabled": true,
+    "mqtt_broker": "core-mosquitto",
+    "mqtt_port": 1883,
+    "mqtt_username": "",
+    "mqtt_password": ""
   },
   "schema": {
     "check_interval": "int",
@@ -46,7 +51,12 @@
     "voip_webhook_token": "password?",
     "voip_alert_numbers": ["str"],
     "voip_tts_voice": "list(en-us|en-gb|en-au|en-sc)?",
-    "voip_tts_speed": "int(80,450)?"
+    "voip_tts_speed": "int(80,450)?",
+    "mqtt_enabled": "bool?",
+    "mqtt_broker": "str?",
+    "mqtt_port": "port?",
+    "mqtt_username": "str?",
+    "mqtt_password": "password?"
   },
   "ports": {
     "5000/tcp": 5000

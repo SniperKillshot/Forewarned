@@ -162,6 +162,17 @@ def load_config():
                 'tts_speed': default_config.get('voip_tts_speed', 160)
             }
             logger.info(f"VoIP configuration loaded: enabled={default_config['voip']['enabled']}, backend={default_config['voip']['backend']}, tts_voice={default_config['voip']['tts_voice']}, tts_speed={default_config['voip']['tts_speed']}")
+        
+        # Build MQTT configuration from flat addon options
+        if any(key.startswith('mqtt_') for key in default_config.keys()):
+            default_config['mqtt'] = {
+                'enabled': default_config.get('mqtt_enabled', True),
+                'broker': default_config.get('mqtt_broker', 'core-mosquitto'),
+                'port': default_config.get('mqtt_port', 1883),
+                'username': default_config.get('mqtt_username', ''),
+                'password': default_config.get('mqtt_password', '')
+            }
+            logger.info(f"MQTT configuration loaded: enabled={default_config['mqtt']['enabled']}, broker={default_config['mqtt']['broker']}")
             
     except Exception as e:
         logger.error(f"Error loading configuration: {e}")

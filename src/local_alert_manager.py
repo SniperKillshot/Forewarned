@@ -12,7 +12,7 @@ class LocalAlertManager:
     This provides a single point of control for all automation triggers.
     """
     
-    def __init__(self, config: Dict, ha_client, update_callback, voip_integration=None):
+    def __init__(self, config: Dict, ha_client, update_callback, voip_integration=None, mqtt_client=None):
         """
         Initialize local alert manager
         
@@ -21,11 +21,13 @@ class LocalAlertManager:
             ha_client: Home Assistant client instance
             update_callback: Callback function to update app state
             voip_integration: Optional VOIP integration instance
+            mqtt_client: Optional MQTT client instance
         """
         self.config = config
         self.ha_client = ha_client
         self.update_callback = update_callback
         self.voip_integration = voip_integration
+        self.mqtt_client = mqtt_client
         self.current_state = {
             'active': False,
             'level': 'none',
@@ -52,26 +54,44 @@ class LocalAlertManager:
         }
     
     async def initialize_manual_switches(self):
-        """Check for and initialize manual override switches in Home Assistant"""
+        """Initialize manual override switches via MQTT discovery or HA REST API"""
         switch_configs = {
-            'advisory': {
+            'manual_advisory': {
                 'name': 'Forewarned Manual Advisory',
-                'icon': 'mdi:information-outline'
+                'icon': 'mdi:information-outline',
+                'level': 'advisory'
             },
-            'watch': {
+            'manual_watch': {
                 'name': 'Forewarned Manual Watch',
-                'icon': 'mdi:eye-outline'
+                'icon': 'mdi:eye-outline',
+                'level': 'watch'
             },
-            'warning': {
+            'manual_warning': {
                 'name': 'Forewarned Manual Warning',
-                'icon': 'mdi:alert'
+                'icon': 'mdi:alert',
+                'level': 'warning'
             },
-            'emergency': {
+            'manual_emergency': {
                 'name': 'Forewarned Manual Emergency',
-                'icon': 'mdi:alarm-light'
+                'icon': 'mdi:alarm-light',
+                'level': 'emergency'
             }
         }
         
+        # If MQTT is enabled, use discovery for switches
+        if self.mqtt_client and self.mqtt_client.connected:
+            logger.info("Using MQTT discovery to create manual override switches")
+            for switch_id, config in switch_configs.items():
+                self.mqtt_client.publish_discovery(
+                    switch_id,
+                    config['name'],
+                    config['icon']
+                )
+            logger.info("Manual override switches created via MQTT discovery")
+            return
+        
+        # Fallback to REST API (temporary switches without unique IDs)
+        logger.warning("MQTT not enabled - creating temporary switches via REST API")
         missing_switches = []
         
         for level, entity_id in self.manual_switches.items():
@@ -79,28 +99,32 @@ class LocalAlertManager:
             state = await self.ha_client.get_state(entity_id)
             if not state:
                 missing_switches.append(entity_id)
-                # Create a temporary state to make it visible
-                config = switch_configs[level]
-                await self.ha_client.set_state(
-                    entity_id,
-                    'off',
-                    {
-                        'friendly_name': config['name'],
-                        'icon': config['icon'],
-                        'note': 'Create this as a Toggle Helper in HA UI for persistent unique ID'
-                    }
-                )
+                # Create a temporary state
+                switch_id = f"manual_{level}"
+                config = switch_configs.get(switch_id)
+                if config:
+                    await self.ha_client.set_state(
+                        entity_id,
+                        'off',
+                        {
+                            'friendly_name': config['name'],
+                            'icon': config['icon'],
+                            'note': 'Enable MQTT for persistent switches with unique IDs'
+                        }
+                    )
             else:
                 logger.info(f"Found existing manual switch: {entity_id}")
         
-        if missing_switches:
-            logger.warning("Manual override switches not found. To create them with unique IDs:")
-            logger.warning("1. Go to Settings > Devices & Services > Helpers")
-            logger.warning("2. Click '+ CREATE HELPER' > Toggle")
-            logger.warning("3. Create switches with these exact entity IDs:")
-            for switch in missing_switches:
-                logger.warning(f"   - {switch}")
-            logger.warning("Temporary switches created, but they won't persist across HA restarts.")
+        if m# Try MQTT first if available
+            if self.mqtt_client and self.mqtt_client.connected:
+                switch_id = f"manual_{level}"
+                state = self.mqtt_client.get_state(switch_id)
+                if state:
+                    return level, f"Manual override: {level.upper()}"
+            
+            # Fallback to HA REST API
+            issing_switches:
+            logger.warning("Temporary switches created without unique IDs. Enable MQTT for persistent switches.")
         else:
             logger.info("All manual override switches found")
     

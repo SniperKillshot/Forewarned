@@ -14,6 +14,7 @@ from src.web_ui import create_app, app_state, update_local_alert_state
 from src.ha_integration import HomeAssistantClient
 from src.local_alert_manager import LocalAlertManager
 from src.voip_integration import VOIPIntegration
+from src.mqtt_integration import MQTTIntegration
 
 # Configure logging
 logging.basicConfig(
@@ -42,12 +43,29 @@ async def run_monitors():
         )
         logger.info(f"VOIP integration initialized with backend: {config['voip'].get('backend', 'webhook')}")
     
+    # Initialize MQTT integration (if configured)
+    mqtt_client = None
+    if 'mqtt' in config and config['mqtt'].get('enabled', True):
+        logger.info("Initializing MQTT integration...")
+        mqtt_client = MQTTIntegration(
+            config.get('mqtt', {}),
+            state_change_callback=None  # Will be set by alert_manager
+        )
+        
+        # Connect to MQTT broker
+        if await mqtt_client.connect():
+            logger.info("MQTT integration connected successfully")
+        else:
+            logger.warning("MQTT connection failed - switches will use REST API fallback")
+            mqtt_client = None
+    
     # Initialize local alert manager
     alert_manager = LocalAlertManager(
         config, 
         ha_client, 
         update_local_alert_state,
-        voip_integration=voip_integration
+        voip_integration=voip_integration,
+        mqtt_client=mqtt_client
     )
     
     # Initialize manual override switches in HA

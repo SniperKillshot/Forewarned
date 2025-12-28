@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.0.40] - 2025-12-28
+### Added
+- MQTT discovery integration for automatic switch creation with unique IDs
+- Manual override switches now created via MQTT with proper entity registry entries
+- MQTT configuration options (broker, port, username, password)
+- Automatic fallback to REST API if MQTT unavailable
+- Device info for all MQTT entities (appears as single Forewarned device in HA)
+
+### Changed
+- Manual switches now use MQTT discovery by default (core-mosquitto broker)
+- Switch state checking now tries MQTT first, falls back to REST API
+- Added py3-paho-mqtt to Dockerfile dependencies
+
 ## [1.0.39] - 2025-12-28
 ### Changed
 - Manual switches now check for existing entities before creating temporary states
