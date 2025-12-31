@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.46] - 2025-12-31
+### Changed
+- Added debug logging to show raw MQTT settings from options.json for troubleshooting
+
 ## [1.0.45] - 2025-12-29
 ### Changed
 - Added username/password status logging to MQTT config loading for diagnostics

@@ -122,6 +122,7 @@ def load_config():
                 user_config = json.load(f)
                 logger.info(f"Loaded configuration from Home Assistant: {config_path}")
                 logger.debug(f"VoIP settings from options.json: voip_enabled={user_config.get('voip_enabled')}, voip_alert_numbers={user_config.get('voip_alert_numbers')}")
+                logger.debug(f"MQTT settings from options.json: mqtt_enabled={user_config.get('mqtt_enabled')}, mqtt_broker={user_config.get('mqtt_broker')}, mqtt_username={user_config.get('mqtt_username')}, mqtt_password={'***' if user_config.get('mqtt_password') else '(none)'}")
                 default_config.update(user_config)
         else:
             logger.warning(f"Config file not found at {config_path}, using defaults")
