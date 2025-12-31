@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.47] - 2025-12-31
+### Fixed
+- Suppressed ALSA audio errors in Docker by configuring null audio device in /etc/asound.conf
+
 ## [1.0.46] - 2025-12-31
 ### Changed
 - Added debug logging to show raw MQTT settings from options.json for troubleshooting

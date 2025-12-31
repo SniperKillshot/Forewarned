@@ -16,6 +16,9 @@ RUN apk add --no-cache \
 # Install py3-pjsua from edge repository (VoIP support)
 RUN apk add --no-cache --repository=https://dl-cdn.alpinelinux.org/alpine/edge/main py3-pjsua
 
+# Suppress ALSA errors in Docker (no sound card available)
+RUN echo "pcm.!default { type plug slave.pcm \"null\" }" > /etc/asound.conf
+
 # Create app directory
 WORKDIR /app
 
