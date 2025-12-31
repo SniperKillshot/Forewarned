@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.0.48] - 2025-12-31
+### Fixed
+- SIP transport now uses random available port (port 0) to avoid "Address in use" errors on restart
+- Added better error logging for transport creation failures
+
 ## [1.0.47] - 2025-12-31
 ### Fixed
 - Suppressed ALSA audio errors in Docker by configuring null audio device in /etc/asound.conf

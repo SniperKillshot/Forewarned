@@ -312,12 +312,20 @@ class VOIPIntegration:
             except Exception as e:
                 logger.warning(f"Could not set null audio device: {e}")
             
-            # Create SIP transport
+            # Create SIP transport with retry on different port if needed
             sipTpConfig = pj.TransportConfig()
-            sipTpConfig.port = self.sip_port  # Use configured port (default 5060)
-            self.ep.transportCreate(pj.PJSIP_TRANSPORT_UDP, sipTpConfig)
+            sipTpConfig.port = 0  # Use 0 for random available port (avoids "Address in use" errors)
             
-            logger.info(f"SIP transport created on UDP port {self.sip_port}")
+            try:
+                transport_id = self.ep.transportCreate(pj.PJSIP_TRANSPORT_UDP, sipTpConfig)
+                # Get the actual port that was assigned
+                transport_info = self.ep.transportGetInfo(transport_id)
+                actual_port = transport_info.localAddress.port
+                logger.info(f"SIP transport created on UDP port {actual_port}")
+            except Exception as e:
+                logger.error(f"Failed to create SIP transport: {e}")
+                logger.error("This usually means another process is using the SIP port")
+                raise
             
             # Start the library
             self.ep.libStart()
