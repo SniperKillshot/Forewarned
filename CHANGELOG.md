@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.0.49] - 2025-12-31
+### Changed
+- MQTT integration now disabled by default (prevents connection timeout on startup)
+- Improved MQTT connection logging with clear status messages
+- Added guidance to enable MQTT when Mosquitto addon is available
+
 ## [1.0.48] - 2025-12-31
 ### Fixed
 - SIP transport now uses random available port (port 0) to avoid "Address in use" errors on restart

@@ -45,8 +45,8 @@ async def run_monitors():
     
     # Initialize MQTT integration (if configured)
     mqtt_client = None
-    if 'mqtt' in config and config['mqtt'].get('enabled', True):
-        logger.info("Initializing MQTT integration...")
+    if 'mqtt' in config and config['mqtt'].get('enabled', False):
+        logger.info("MQTT integration enabled - attempting to connect...")
         mqtt_client = MQTTIntegration(
             config.get('mqtt', {}),
             state_change_callback=None  # Will be set by alert_manager
@@ -54,10 +54,13 @@ async def run_monitors():
         
         # Connect to MQTT broker
         if await mqtt_client.connect():
-            logger.info("MQTT integration connected successfully")
+            logger.info("✓ MQTT integration connected successfully")
         else:
-            logger.warning("MQTT connection failed - switches will use REST API fallback")
+            logger.warning("✗ MQTT connection failed - manual switches will use REST API fallback")
+            logger.warning("To enable MQTT: Install Mosquitto addon and set mqtt_enabled=true in addon config")
             mqtt_client = None
+    else:
+        logger.info("MQTT integration disabled - manual switches will use REST API (no unique IDs)")
     
     # Initialize local alert manager
     alert_manager = LocalAlertManager(

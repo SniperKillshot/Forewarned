@@ -164,7 +164,7 @@ class MQTTIntegration:
                     "name": "Forewarned",
                     "model": "Weather & EOC Alert System",
                     "manufacturer": "Forewarned",
-                    "sw_version": "1.0.48"
+                    "sw_version": "1.0.49"
                 }
             }
             
