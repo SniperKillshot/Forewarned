@@ -17,7 +17,13 @@ RUN apk add --no-cache \
 RUN apk add --no-cache --repository=https://dl-cdn.alpinelinux.org/alpine/edge/main py3-pjsua
 
 # Suppress ALSA errors in Docker (no sound card available)
-RUN echo "pcm.!default { type plug slave.pcm \"null\" }" > /etc/asound.conf
+RUN mkdir -p /etc && \
+    echo "pcm.!default { type plug slave.pcm \"null\" }" > /etc/asound.conf && \
+    echo "ctl.!default { type hw card 0 }" >> /etc/asound.conf
+
+# Set environment variable to suppress ALSA warnings
+ENV ALSA_CARD=default
+ENV AUDIODEV=null
 
 # Create app directory
 WORKDIR /app

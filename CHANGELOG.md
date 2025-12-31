@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.50] - 2025-12-31
+### Fixed
+- Enhanced ALSA error suppression with environment variables and improved asound.conf
+
 ## [1.0.49] - 2025-12-31
 ### Changed
 - MQTT integration now disabled by default (prevents connection timeout on startup)
