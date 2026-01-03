@@ -285,26 +285,32 @@ class VOIPIntegration:
         self.account = None
         
         try:
+            logger.info("Creating PJSUA2 endpoint...")
             # Create endpoint
             self.ep = pj.Endpoint()
+            
+            logger.info("Calling libCreate()...")
             self.ep.libCreate()
             
+            logger.info("Configuring endpoint...")
             # Initialize endpoint with logging and null audio device
             ep_cfg = pj.EpConfig()
-            ep_cfg.logConfig.level = 5  # 0=none, 6=max verbosity
-            ep_cfg.logConfig.consoleLevel = 5
-            ep_cfg.logConfig.msgLogging = 1  # Enable SIP message logging
+            ep_cfg.logConfig.level = 3  # Reduced from 5 to avoid excessive logging
+            ep_cfg.logConfig.consoleLevel = 3
+            ep_cfg.logConfig.msgLogging = 0  # Disable SIP message logging (can cause issues)
             
             # Configure null audio device for headless operation
             ep_cfg.medConfig.noVad = True  # Disable voice activity detection
             ep_cfg.medConfig.ecTailLen = 0  # Disable echo cancellation
             
+            logger.info("Calling libInit()...")
             self.ep.libInit(ep_cfg)
             
-            logger.info("PJSUA2 initialized with SIP message logging enabled")
+            logger.info("PJSUA2 initialized successfully")
             
             # Set null audio device (no actual hardware needed)
             try:
+                logger.info("Setting null audio device...")
                 aud_dev_mgr = self.ep.audDevManager()
                 # Set to null device (-1 for capture, -2 for playback means null device)
                 aud_dev_mgr.setNullDev()
@@ -312,6 +318,7 @@ class VOIPIntegration:
             except Exception as e:
                 logger.warning(f"Could not set null audio device: {e}")
             
+            logger.info(f"Creating SIP transport on port {self.sip_port}...")
             # Create SIP transport on configured port (0 = random)
             sipTpConfig = pj.TransportConfig()
             sipTpConfig.port = self.sip_port

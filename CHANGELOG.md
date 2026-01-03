@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.0.56] - 2026-01-03
+### Fixed
+- Added detailed logging to PJSUA2 initialization to diagnose segmentation faults
+- Reduced PJSIP logging verbosity (level 3) and disabled SIP message logging to prevent crashes
+
 ## [1.0.55] - 2026-01-03
 ### Fixed
 - Changed voip_sip_port schema from port? to int(0,65535)? to allow 0 for random port
