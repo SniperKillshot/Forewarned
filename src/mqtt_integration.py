@@ -2,6 +2,7 @@
 import json
 import logging
 import asyncio
+import time
 from typing import Dict, Optional, Callable
 import paho.mqtt.client as mqtt
 
@@ -55,12 +56,7 @@ class MQTTIntegration:
             
     def on_disconnect(self, client, userdata, rc):
         """Callback when disconnected from MQTT broker"""
-        import traceback
-        logger.warning(f"Disconnected from MQTT broker: {rc}")
-        if rc == 7:  # Client-initiated disconnect
-            logger.error("Client disconnect detected - Stack trace:")
-            for line in traceback.format_stack():
-                logger.error(line.strip())
+        logger.warning(f"Disconnected from MQTT broker (rc={rc})")
         self.connected = False
         
     def on_message(self, client, userdata, msg):
@@ -103,7 +99,10 @@ class MQTTIntegration:
             
             logger.info(f"MQTT Configuration: broker={broker}, port={port}, username={'(set)' if username else '(none)'}")
             
-            self.client = mqtt.Client(client_id="forewarned_addon", protocol=mqtt.MQTTv311)
+            # Use unique client ID with timestamp to prevent conflicts on restart
+            client_id = f"forewarned_addon_{int(time.time())}"
+            self.client = mqtt.Client(client_id=client_id, protocol=mqtt.MQTTv311)
+            logger.info(f"MQTT client ID: {client_id}")
             
             # Disable automatic reconnection to prevent loops
             self.client.reconnect_delay_set(min_delay=1, max_delay=120)

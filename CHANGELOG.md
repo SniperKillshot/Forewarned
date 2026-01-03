@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.0.60] - 2026-01-03
+### Fixed
+- Fixed MQTT reconnect loop caused by client ID conflicts on addon restart
+- MQTT client now uses unique timestamp-based ID to prevent broker session conflicts
+- Removed verbose stack trace logging
+
 ## [1.0.59] - 2026-01-03
 ### Changed
 - Added stack trace logging for MQTT disconnect events to diagnose reconnect loop
