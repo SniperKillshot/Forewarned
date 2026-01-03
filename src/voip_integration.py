@@ -320,8 +320,13 @@ class VOIPIntegration:
                 transport_id = self.ep.transportCreate(pj.PJSIP_TRANSPORT_UDP, sipTpConfig)
                 # Get the actual port that was assigned
                 transport_info = self.ep.transportGetInfo(transport_id)
-                actual_port = transport_info.localAddress.port
-                logger.info(f"SIP transport created on UDP port {actual_port}")
+                # localAddress is a string like "0.0.0.0:5060", extract port
+                local_addr = transport_info.localAddress
+                if isinstance(local_addr, str) and ':' in local_addr:
+                    actual_port = local_addr.split(':')[-1]
+                else:
+                    actual_port = getattr(local_addr, 'port', 'unknown')
+                logger.info(f"SIP transport created on UDP: {local_addr}")
             except Exception as e:
                 logger.error(f"Failed to create SIP transport: {e}")
                 logger.error("This usually means another process is using the SIP port")

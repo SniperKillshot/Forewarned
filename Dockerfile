@@ -25,6 +25,9 @@ RUN mkdir -p /etc && \
 ENV ALSA_CARD=default
 ENV AUDIODEV=null
 
+# Prevent JACK audio server from attempting to start
+ENV JACK_NO_START_SERVER=1
+
 # Create app directory
 WORKDIR /app
 

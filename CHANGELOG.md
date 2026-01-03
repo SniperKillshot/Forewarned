@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.0.51] - 2026-01-03
+### Fixed
+- Added JACK_NO_START_SERVER environment variable to suppress JACK audio server errors
+- Fixed SIP transport initialization error: 'str' object has no attribute 'port'
+- Improved handling of localAddress string parsing in PJSUA2
+
 ## [1.0.50] - 2025-12-31
 ### Fixed
 - Enhanced ALSA error suppression with environment variables and improved asound.conf
