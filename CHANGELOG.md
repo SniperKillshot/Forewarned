@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.0.61] - 2026-01-03
+### Fixed
+- Manual override switches now preserve their state across addon restarts
+- MQTT discovery reads existing HA state and restores it instead of resetting to OFF
+- Added MQTT state change callback to alert manager for proper switch integration
+
 ## [1.0.60] - 2026-01-03
 ### Fixed
 - Fixed MQTT reconnect loop caused by client ID conflicts on addon restart

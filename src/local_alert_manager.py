@@ -52,6 +52,21 @@ class LocalAlertManager:
             'warning': 'switch.forewarned_manual_warning',
             'emergency': 'switch.forewarned_manual_emergency'
         }
+        
+        # Set up MQTT callback if client is available
+        if self.mqtt_client:
+            self.mqtt_client.state_change_callback = self.handle_manual_switch_change
+    
+    async def handle_manual_switch_change(self, switch_id: str, state: bool):
+        """
+        Handle manual switch state changes from MQTT
+        
+        Args:
+            switch_id: Switch identifier (e.g., 'manual_advisory')
+            state: True for ON, False for OFF
+        """
+        logger.info(f"Manual switch {switch_id} changed to {'ON' if state else 'OFF'}")
+        # Note: The state will be picked up on the next periodic check via _check_manual_overrides
     
     async def initialize_manual_switches(self):
         """Initialize manual override switches via MQTT discovery or HA REST API"""
@@ -82,11 +97,30 @@ class LocalAlertManager:
         if self.mqtt_client and self.mqtt_client.connected:
             logger.info("Using MQTT discovery to create manual override switches")
             for switch_id, config in switch_configs.items():
+                # Check current state in HA before publishing discovery
+                entity_id = self.manual_switches.get(config['level'])
+                current_state = False
+                if entity_id:
+                    try:
+                        ha_state = await self.ha_client.get_state(entity_id)
+                        if ha_state and ha_state.get('state') == 'on':
+                            current_state = True
+                            logger.info(f"Preserving existing state for {switch_id}: ON")
+                    except Exception as e:
+                        logger.debug(f"Could not check existing state for {entity_id}: {e}")
+                
+                # Publish discovery (will initialize to OFF)
                 self.mqtt_client.publish_discovery(
                     switch_id,
                     config['name'],
                     config['icon']
                 )
+                
+                # Restore the actual state if it was ON
+                if current_state:
+                    self.mqtt_client.publish_state(switch_id, True)
+                    logger.info(f"Restored {switch_id} to ON")
+                    
             logger.info("Manual override switches created via MQTT discovery")
             return
         
