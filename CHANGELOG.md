@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.59] - 2026-01-03
+### Changed
+- Added stack trace logging for MQTT disconnect events to diagnose reconnect loop
+
 ## [1.0.58] - 2026-01-03
 ### Fixed
 - Added check for empty switches dict before subscribing to prevent errors

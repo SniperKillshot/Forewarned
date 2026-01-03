@@ -55,7 +55,12 @@ class MQTTIntegration:
             
     def on_disconnect(self, client, userdata, rc):
         """Callback when disconnected from MQTT broker"""
+        import traceback
         logger.warning(f"Disconnected from MQTT broker: {rc}")
+        if rc == 7:  # Client-initiated disconnect
+            logger.error("Client disconnect detected - Stack trace:")
+            for line in traceback.format_stack():
+                logger.error(line.strip())
         self.connected = False
         
     def on_message(self, client, userdata, msg):
