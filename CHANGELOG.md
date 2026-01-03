@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.0.57] - 2026-01-03
+### Fixed
+- Prevented duplicate MQTT client connections that caused rapid connect/disconnect loops
+- Reduced MQTT subscription logging verbosity (moved to debug level)
+
 ## [1.0.56] - 2026-01-03
 ### Fixed
 - Added detailed logging to PJSUA2 initialization to diagnose segmentation faults

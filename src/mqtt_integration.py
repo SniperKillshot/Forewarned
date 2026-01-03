@@ -44,7 +44,7 @@ class MQTTIntegration:
             for switch_id in self.switches:
                 command_topic = f"homeassistant/switch/forewarned/{switch_id}/set"
                 client.subscribe(command_topic)
-                logger.info(f"Subscribed to {command_topic}")
+            logger.debug(f"Subscribed to {len(self.switches)} switch command topics")
         else:
             error_msg = rc_messages.get(rc, f"Unknown error code {rc}")
             logger.error(f"✗ MQTT connection failed: {error_msg}")
@@ -82,6 +82,11 @@ class MQTTIntegration:
             
     async def connect(self):
         """Connect to MQTT broker"""
+        # Prevent multiple simultaneous connections
+        if self.client is not None:
+            logger.warning("MQTT client already exists - skipping duplicate connection")
+            return self.connected
+            
         try:
             broker = self.config.get('broker', 'core-mosquitto')
             port = self.config.get('port', 1883)
