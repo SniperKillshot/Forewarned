@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.54] - 2026-01-03
+### Added
+- Added voip_sip_port configuration option (default: 5060, use 0 for random port)
+
 ## [1.0.53] - 2026-01-03
 ### Fixed
 - MQTT integration now correctly reads username/password from nested config structure

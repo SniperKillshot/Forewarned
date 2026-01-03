@@ -273,7 +273,7 @@ class VOIPIntegration:
         self.sip_user = self.config.get('sip_user', '')
         self.sip_password = self.config.get('sip_password', '')
         self.sip_domain = self.config.get('sip_domain', '')
-        self.sip_port = self.config.get('sip_port', 5060)  # Default to standard SIP port
+        self.sip_port = self.config.get('sip_port', 5060)  # Default to 5060, use 0 for random
         
         if not all([self.sip_server, self.sip_user, self.sip_password, self.sip_domain]):
             logger.error("SIP backend requires server, user, password, and domain to be configured")
@@ -312,9 +312,9 @@ class VOIPIntegration:
             except Exception as e:
                 logger.warning(f"Could not set null audio device: {e}")
             
-            # Create SIP transport on standard SIP port
+            # Create SIP transport on configured port (0 = random)
             sipTpConfig = pj.TransportConfig()
-            sipTpConfig.port = 5060  # Standard SIP port
+            sipTpConfig.port = self.sip_port
             
             try:
                 transport_id = self.ep.transportCreate(pj.PJSIP_TRANSPORT_UDP, sipTpConfig)

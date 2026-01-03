@@ -150,6 +150,7 @@ def load_config():
                 'sip_user': default_config.get('voip_sip_user', ''),
                 'sip_password': default_config.get('voip_sip_password', ''),
                 'sip_domain': default_config.get('voip_sip_domain', ''),
+                'sip_port': default_config.get('voip_sip_port', 5060),
                 'webhook_url': default_config.get('voip_webhook_url', ''),
                 'webhook_method': default_config.get('voip_webhook_method', 'POST'),
                 'webhook_auth': {
