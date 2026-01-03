@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.0.58] - 2026-01-03
+### Fixed
+- Added check for empty switches dict before subscribing to prevent errors
+- Configured MQTT reconnect delays to reduce reconnection loop frequency
+
 ## [1.0.57] - 2026-01-03
 ### Fixed
 - Prevented duplicate MQTT client connections that caused rapid connect/disconnect loops

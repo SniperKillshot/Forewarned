@@ -41,10 +41,13 @@ class MQTTIntegration:
             logger.info(f"✓ MQTT broker connection successful")
             self.connected = True
             # Subscribe to all command topics
-            for switch_id in self.switches:
-                command_topic = f"homeassistant/switch/forewarned/{switch_id}/set"
-                client.subscribe(command_topic)
-            logger.debug(f"Subscribed to {len(self.switches)} switch command topics")
+            if len(self.switches) > 0:
+                for switch_id in self.switches:
+                    command_topic = f"homeassistant/switch/forewarned/{switch_id}/set"
+                    client.subscribe(command_topic)
+                logger.debug(f"Subscribed to {len(self.switches)} switch command topics")
+            else:
+                logger.debug("No switches configured yet - will subscribe after discovery")
         else:
             error_msg = rc_messages.get(rc, f"Unknown error code {rc}")
             logger.error(f"✗ MQTT connection failed: {error_msg}")
@@ -96,6 +99,9 @@ class MQTTIntegration:
             logger.info(f"MQTT Configuration: broker={broker}, port={port}, username={'(set)' if username else '(none)'}")
             
             self.client = mqtt.Client(client_id="forewarned_addon", protocol=mqtt.MQTTv311)
+            
+            # Disable automatic reconnection to prevent loops
+            self.client.reconnect_delay_set(min_delay=1, max_delay=120)
             
             if username and password:
                 logger.info("Setting MQTT authentication credentials")
