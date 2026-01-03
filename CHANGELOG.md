@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.0.53] - 2026-01-03
+### Fixed
+- MQTT integration now correctly reads username/password from nested config structure
+- Fixed MQTT authentication "not authorized" errors
+
 ## [1.0.52] - 2026-01-03
 ### Changed
 - SIP transport now uses standard port 5060 instead of random port

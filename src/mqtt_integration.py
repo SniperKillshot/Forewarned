@@ -83,10 +83,10 @@ class MQTTIntegration:
     async def connect(self):
         """Connect to MQTT broker"""
         try:
-            broker = self.config.get('mqtt_broker', 'core-mosquitto')
-            port = self.config.get('mqtt_port', 1883)
-            username = self.config.get('mqtt_username', '')
-            password = self.config.get('mqtt_password', '')
+            broker = self.config.get('broker', 'core-mosquitto')
+            port = self.config.get('port', 1883)
+            username = self.config.get('username', '')
+            password = self.config.get('password', '')
             
             logger.info(f"MQTT Configuration: broker={broker}, port={port}, username={'(set)' if username else '(none)'}")
             
