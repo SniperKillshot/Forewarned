@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.52] - 2026-01-03
+### Changed
+- SIP transport now uses standard port 5060 instead of random port
+
 ## [1.0.51] - 2026-01-03
 ### Fixed
 - Added JACK_NO_START_SERVER environment variable to suppress JACK audio server errors
