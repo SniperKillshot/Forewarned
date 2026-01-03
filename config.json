@@ -1,6 +1,6 @@
 {
   "name": "Forewarned",
-  "version": "1.0.54",
+  "version": "1.0.55",
   "slug": "forewarned",
   "description": "Weather alerting and EOC state monitoring with automated routine activation",
   "arch": ["armhf", "armv7", "aarch64", "amd64", "i386"],
@@ -44,7 +44,7 @@
     "voip_sip_user": "str?",
     "voip_sip_password": "password?",
     "voip_sip_domain": "str?",
-    "voip_sip_port": "port?",
+    "voip_sip_port": "int(0,65535)?",
     "voip_webhook_url": "str?",
     "voip_webhook_method": "list(GET|POST|PUT)?",
     "voip_webhook_auth_type": "list(none|basic|bearer)?",

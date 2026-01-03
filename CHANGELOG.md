@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.55] - 2026-01-03
+### Fixed
+- Changed voip_sip_port schema from port? to int(0,65535)? to allow 0 for random port
+
 ## [1.0.54] - 2026-01-03
 ### Added
 - Added voip_sip_port configuration option (default: 5060, use 0 for random port)
