@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.62] - 2026-04-14
+### Fixed
+- MQTT discovery no longer publishes an initial retained OFF state that overwrote user/manual switch values
+
 ## [1.0.61] - 2026-01-03
 ### Fixed
 - Manual override switches now preserve their state across addon restarts

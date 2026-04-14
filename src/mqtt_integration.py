@@ -198,11 +198,11 @@ class MQTTIntegration:
                     'command_topic': command_topic,
                     'state_topic': state_topic
                 }
-                
-                # Initialize state as OFF
-                self.switch_states[switch_id] = False
-                self.client.publish(state_topic, "OFF", retain=True)
-                
+
+                # Do NOT force an initial retained OFF state on discovery.
+                # Publishing a retained OFF here can overwrite a user's existing
+                # switch state in Home Assistant (race condition). The caller
+                # should publish the known state explicitly if needed.
                 return True
             else:
                 logger.error(f"Failed to publish discovery for {switch_id}: {result.rc}")
