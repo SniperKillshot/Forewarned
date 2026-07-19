@@ -49,10 +49,7 @@ class AlertCall(pj.Call):
             
             # Clean up TTS player
             if self.tts_player:
-                try:
-                    self.tts_player = None
-                except:
-                    pass
+                self.tts_player = None
             
             # Remove from active calls
             if self.voip and hasattr(self.voip, 'active_calls'):
@@ -461,25 +458,13 @@ class VOIPIntegration:
             self.active_calls[ci.id] = call
             
             logger.info(f"SIP call initiated to {call_uri} with TTS playback")
-            
+
             return True
-            
+
         except Exception as e:
             logger.error(f"Error making SIP call: {e}")
             return False
-            
-            # Note: In production, you'd want to:
-            # 1. Wait for call to be answered
-            # 2. Play TTS message
-            # 3. Handle call events
-            # This is a basic implementation
-            
-            return True
-            
-        except Exception as e:
-            logger.error(f"Error making SIP call: {e}")
-            return False
-    
+
     async def _make_webhook_call(self, extension: str, message: str, alert_level: str) -> bool:
         """
         Make call via webhook (Asterisk AMI, FreePBX, etc.)

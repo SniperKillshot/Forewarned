@@ -17,7 +17,6 @@ def load_config():
     
     # Default configuration
     default_config = {
-        'weather_api_key': '',
         'check_interval': 300,  # 5 minutes
         'eoc_urls': [
             'https://disaster.townsville.qld.gov.au/'
@@ -116,6 +115,21 @@ def load_config():
     }
     
     try:
+        # Merge in previously-saved config (routines, alert_rules, and other
+        # fields not exposed via the HA addon options schema) before the
+        # HA-managed options below, so those persisted web-UI edits survive a
+        # restart while HA-managed options still win for the keys it manages.
+        if os.path.exists('/data'):
+            saved_config_path = '/data/config.json'
+        else:
+            saved_config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'config_data.json')
+
+        if os.path.exists(saved_config_path):
+            with open(saved_config_path, 'r') as f:
+                saved_config = json.load(f)
+                default_config.update(saved_config)
+                logger.info(f"Loaded saved configuration from {saved_config_path}")
+
         # Try to load from Home Assistant config
         if os.path.exists(config_path):
             with open(config_path, 'r') as f:
@@ -126,18 +140,8 @@ def load_config():
                 default_config.update(user_config)
         else:
             logger.warning(f"Config file not found at {config_path}, using defaults")
-            
-            # In development mode, try to load from local config file
-            local_config_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'config_data.json')
-            if os.path.exists(local_config_path):
-                with open(local_config_path, 'r') as f:
-                    user_config = json.load(f)
-                    default_config.update(user_config)
-                    logger.info(f"Loaded configuration from {local_config_path}")
-            
+
         # Override with environment variables
-        if os.getenv('WEATHER_API_KEY'):
-            default_config['weather_api_key'] = os.getenv('WEATHER_API_KEY')
         if os.getenv('CHECK_INTERVAL'):
             default_config['check_interval'] = int(os.getenv('CHECK_INTERVAL'))
         

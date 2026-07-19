@@ -13,10 +13,11 @@ A Home Assistant addon for monitoring weather alerts and Emergency Operations Ce
   - Only processes Queensland warnings (IDQ prefix)
 
 - **EOC Status Monitoring**
-  - Monitor multiple EOC websites for status changes
-  - Detect activation keywords and status updates
-  - CSS selector support for targeted content monitoring
-  - Change detection using content hashing
+  - Polls the Townsville LDMG Guardian IMS API for operation status
+  - Maps status to stand up / lean forward / alert / stand down / inactive
+  - Sends a Home Assistant notification and triggers routines on state change
+  - Currently supports the Townsville (`disaster.townsville.qld.gov.au`) Guardian
+    IMS endpoint only — other configured `eoc_urls` are logged and ignored
 
 - **Automated Routine Activation**
   - Trigger Home Assistant scenes and scripts based on alerts
@@ -38,7 +39,7 @@ A Home Assistant addon for monitoring weather alerts and Emergency Operations Ce
 
 1. Navigate to **Supervisor** → **Add-on Store**
 2. Click the **⋮** menu → **Repositories**
-3. Add this repository URL: `https://github.com/yourusername/forewarned`
+3. Add this repository URL: `https://github.com/SniperKillshot/Forewarned`
 4. Find "Forewarned" in the add-on list
 5. Click **Install**
 
@@ -69,13 +70,11 @@ check_interval: 180
 # Location to monitor (filters warnings for this area)
 location: "Townsville"
 
-# EOC URLs with CSS selectors for targeted monitoring
+# EOC URLs to monitor — currently only the Townsville LDMG Guardian IMS
+# endpoint is actually supported; other URLs are logged as unsupported and
+# skipped.
 eoc_urls:
-  - url: "https://county-eoc.example.com/status"
-    selectors:
-      status: ".eoc-status"
-      level: "#activation-level"
-  - url: "https://emergency.city.gov"
+  - "https://disaster.townsville.qld.gov.au/"
 
 # Home Assistant routines (scenes/scripts to activate)
 routines:
@@ -174,13 +173,15 @@ forewarned/
 
 ### Local Development
 
+In the addon container, dependencies are installed via Alpine `apk` packages in
+the `Dockerfile`, not pip. For local development outside Docker:
+
 ```bash
 # Install dependencies
 pip install -r requirements.txt
 
 # Set environment variables
 export SUPERVISOR_TOKEN="your-token"
-export WEATHER_API_KEY="your-api-key"
 
 # Run the application
 python main.py
@@ -202,28 +203,26 @@ Customize in configuration to add more types. The system monitors warnings in XM
 
 ## EOC Monitoring
 
-The EOC monitor detects activation based on keywords:
-- "activated"
-- "active"
-- "level 1/2/3"
-- "emergency operations"
-- "eoc active"
-
-Content changes trigger notifications even without these keywords.
+The EOC monitor polls the Townsville LDMG Guardian IMS API (JSON) and maps its
+`operationstatus` field to one of: `stand up`, `lean forward`, `alert`,
+`stand down`, `inactive`. A Home Assistant notification is sent and the matching
+`eoc_<state>` routine is triggered whenever the mapped state changes. Only the
+Townsville `disaster.townsville.qld.gov.au` URL is currently wired up — this is
+not a generic scraper.
 
 ## Troubleshooting
 
 ### No Weather Alerts Appearing
 
-1. Check NWS API availability: `https://api.weather.gov/alerts/active`
+1. Check BOM FTP availability: `ftp://ftp.bom.gov.au/anon/gen/fwo/`
 2. Verify internet connectivity
-3. Check logs for API errors
+3. Check logs for FTP/parsing errors
 
 ### EOC Monitor Not Detecting Changes
 
-1. Verify URL is accessible
-2. Test CSS selectors with browser DevTools
-3. Check for anti-scraping measures (rate limiting, captchas)
+1. Verify `eoc_urls` includes the Townsville LDMG URL — other URLs are not supported yet
+2. Check that the Guardian IMS API (`https://disaster.townsville.qld.gov.au/dashboard/imsOperation`) is reachable
+3. Check logs for the mapped status vs. the raw `operationstatus` value
 
 ### Home Assistant Integration Not Working
 
@@ -245,4 +244,5 @@ Built with:
 - Flask - Web framework
 - BeautifulSoup4 - HTML parsing
 - aiohttp - Async HTTP client
-- National Weather Service API
+- Australian Bureau of Meteorology (BOM) FTP feed
+- Townsville LDMG Guardian IMS API

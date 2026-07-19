@@ -1,5 +1,35 @@
 # Changelog
 
+## [1.0.63] - 2026-07-19
+### Fixed
+- Config saved via the `/config` web page (routines, alert_rules, etc.) no
+  longer vanishes on restart — `load_config()` now reads back `/data/config.json`
+  before applying HA-managed addon options
+- Disabled Flask debug mode in production
+- Removed dead `app.voip_integration` reference in favor of the working
+  `app_state['voip_integration']`, which also revives the `/api/voip/test-call`
+  endpoint (previously always returned "not configured")
+- Removed unreachable duplicate `except`/logging code in
+  `src/voip_integration.py`'s `_make_sip_call`
+- Removed unused `weather_api_key` plumbing (BOM FTP requires no API key)
+### Changed
+- Downgraded leftover "DEBUG"/"HEATWAVE DEBUG" troubleshooting log lines in
+  `weather_monitor.py` from `info` to `debug` level
+- `requirements.txt` now reflects the actual local-dev dependency set (removed
+  unused `aioftp`; addon container deps still come from the Dockerfile's apk
+  packages)
+### Docs
+- Removed FREEPBX_NOTE.md and VOIP_SUMMARY.md (superseded by
+  VOIP_INTEGRATION.md/VOIP_QUICKSTART.md and this changelog)
+- Merged GIT_QUICKSTART.md into GITHUB_SETUP.md as a Quick Reference section
+- Corrected README/copilot-instructions EOC monitoring description to match
+  the actual Guardian IMS API implementation (was describing a generic
+  CSS-selector/content-hash scraper that doesn't exist)
+- Fixed stale NWS/api.weather.gov troubleshooting reference (project only
+  monitors Australian BOM)
+- Filled in real repository URL in build.json/repository.json/README (was
+  `yourusername`/`YOUR-USERNAME` placeholders)
+
 ## [1.0.62] - 2026-04-14
 ### Fixed
 - MQTT discovery no longer publishes an initial retained OFF state that overwrote user/manual switch values

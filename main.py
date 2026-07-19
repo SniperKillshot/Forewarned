@@ -111,14 +111,10 @@ def main():
         
         # Start web UI
         app = create_app()
-        
-        # Store VOIP integration reference in Flask app
-        # (will be populated when monitors start)
-        app.voip_integration = None
-        
+
         port = int(os.getenv('PORT', 5000))
         logger.info(f"Starting web server on port {port}")
-        app.run(host='0.0.0.0', port=port, debug=True)
+        app.run(host='0.0.0.0', port=port, debug=False)
         
     except KeyboardInterrupt:
         logger.info("Shutting down...")

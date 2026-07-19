@@ -1,1 +1,16 @@
-aioftp>=0.21.0
+# For local (non-Docker) development only.
+# In the addon container, these are installed via Alpine apk packages in the
+# Dockerfile instead (py3-flask, py3-aiohttp, py3-lxml, py3-beautifulsoup4,
+# py3-yaml, py3-requests, py3-paho-mqtt, py3-pjsua).
+flask
+aiohttp
+lxml
+beautifulsoup4
+pyyaml
+requests
+paho-mqtt
+
+# Optional: only needed for the direct-SIP VOIP backend (not yet implemented).
+# Not installable via plain pip on most platforms — use the Docker image's
+# py3-pjsua (Alpine edge repo) if you need to exercise that code path locally.
+# pjsua2

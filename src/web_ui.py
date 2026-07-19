@@ -269,7 +269,8 @@ HANGUP
     @app.route('/api/voip/test-call', methods=['POST'])
     def voip_test_call():
         """Test VOIP call endpoint"""
-        if not app.voip_integration:
+        voip_integration = app_state.get('voip_integration')
+        if not voip_integration:
             return jsonify({'error': 'VOIP integration not configured'}), 400
         
         data = request.get_json()
@@ -286,7 +287,7 @@ HANGUP
         asyncio.set_event_loop(loop)
         
         success = loop.run_until_complete(
-            app.voip_integration.make_alert_call(extension, alert_level, reason)
+            voip_integration.make_alert_call(extension, alert_level, reason)
         )
         
         if success:

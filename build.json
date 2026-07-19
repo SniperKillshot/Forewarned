@@ -4,8 +4,8 @@
   },
   "name": "Forewarned",
   "description": "Weather alerting and EOC state monitoring with automated routine activation",
-  "version": "1.0.50",
+  "version": "1.0.63",
   "slug": "forewarned",
-  "url": "https://github.com/yourusername/forewarned",
+  "url": "https://github.com/SniperKillshot/Forewarned",
   "arch": ["aarch64"]
 }

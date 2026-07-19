@@ -1,5 +1,4 @@
 {
-  "weather_api_key": "",
   "check_interval": 300,
   "alert_entities": [],
   "eoc_urls": [

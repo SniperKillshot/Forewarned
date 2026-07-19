@@ -6,13 +6,13 @@ Forewarned is a Home Assistant addon for weather alerting and Emergency Operatio
 ## Technology Stack
 - **Language:** Python 3
 - **Framework:** Flask (web UI)
-- **Libraries:** aioftp (async FTP), lxml (XML parsing), BeautifulSoup4 (HTML parsing)
+- **Libraries:** ftplib (stdlib FTP), lxml (XML parsing), BeautifulSoup4 (HTML parsing)
 - **Platform:** Home Assistant Addon (Docker-based)
-- **Data Sources:** Australian BOM FTP (ftp://ftp.bom.gov.au/anon/gen/fwo/), Home Assistant Supervisor API
+- **Data Sources:** Australian BOM FTP (ftp://ftp.bom.gov.au/anon/gen/fwo/), Townsville LDMG Guardian IMS API, Home Assistant Supervisor API
 
 ## Key Features
 1. **Weather Monitoring** - Australian Bureau of Meteorology (BOM) warnings via FTP (XML/CAP formats)
-2. **EOC Monitoring** - Website change detection with CSS selector support
+2. **EOC Monitoring** - Polls the Townsville LDMG Guardian IMS API and maps operation status; only this one endpoint is currently supported
 3. **Home Assistant Integration** - Binary sensors, service calls, scenes/scripts
 4. **Web Dashboard** - Real-time status display with auto-refresh
 5. **Automated Routines** - Trigger scenes/scripts based on alert types

@@ -1,5 +1,41 @@
 # GitHub Deployment Setup Guide for Forewarned
 
+## Quick Reference
+
+Already set up? Here's the day-to-day cheat sheet — see the full steps below for
+first-time setup.
+
+```powershell
+# Check what changed / view diffs / history
+git status
+git diff
+git log --oneline
+
+# Make changes & push
+git add .
+git commit -m "Description of what you changed"
+git push
+
+# Undo uncommitted changes to a file
+git checkout -- filename
+
+# Pull latest from GitHub
+git pull
+```
+
+**Version bump:** edit `version` in `config.json`, update `CHANGELOG.md`, commit and
+push, then click **Update** on the addon in Home Assistant.
+
+**Repository URL for Home Assistant:**
+`Settings → Add-ons → Add-on Store → ⋮ → Repositories` → add
+`https://github.com/SniperKillshot/Forewarned`
+
+**Git not recognized?** Restart VS Code after installing Git.
+**Authentication failed?** GitHub removed password auth — use a Personal Access
+Token or GitHub CLI (generate a token at https://github.com/settings/tokens).
+**Changes not showing in HA?** Restart the addon, or rebuild if the Dockerfile
+changed, and check addon logs for errors.
+
 ## Step 1: Install Git for Windows
 
 1. Download Git from: https://git-scm.com/download/win
@@ -55,13 +91,14 @@ git commit -m "Initial commit: Forewarned HA addon with weather and EOC monitori
 
 ## Step 5: Connect Local Repo to GitHub
 
-GitHub will show you commands. Use these (replace YOUR-USERNAME):
+GitHub will show you commands. This repo is already connected to
+`https://github.com/SniperKillshot/Forewarned`:
 
 ```powershell
 cd F:\Development\Homelab\Forewarned
 
 # Add remote repository
-git remote add origin https://github.com/YOUR-USERNAME/forewarned.git
+git remote add origin https://github.com/SniperKillshot/Forewarned.git
 
 # Rename branch to main (if needed)
 git branch -M main
@@ -84,7 +121,7 @@ This tells Home Assistant about your addon repository.
 4. Select **Repositories**
 5. Add your repository URL:
    ```
-   https://github.com/YOUR-USERNAME/forewarned
+   https://github.com/SniperKillshot/Forewarned
    ```
 6. Click **Add**
 7. Close and reload the Add-on Store page

@@ -111,7 +111,6 @@ class WeatherMonitor:
         except Exception as e:
             logger.error(f"FTP error: {e}")
             return {}
-            logger.error(f"FTP error: {e}")
     
     def _process_ftp_file(self, ftp: FTP, filename: str, current_alerts: Dict) -> bool:
         """
@@ -149,10 +148,10 @@ class WeatherMonitor:
                 for info in info_elements:
                     alert_id = filename
                     event = info.findtext('cap:event', default='', namespaces=namespaces)
-                    logger.info(f"DEBUG {filename}: event from cap:event = '{event}' (len={len(event) if event else 0})")
+                    logger.debug(f"{filename}: event from cap:event = '{event}' (len={len(event) if event else 0})")
                     if not event:
                         event = info.findtext('event', default='')
-                        logger.info(f"DEBUG {filename}: event from event = '{event}' (len={len(event) if event else 0})")
+                        logger.debug(f"{filename}: event from event = '{event}' (len={len(event) if event else 0})")
                     
                     headline = info.findtext('cap:headline', default='', namespaces=namespaces)
                     if not headline:
@@ -199,11 +198,11 @@ class WeatherMonitor:
                         
                         # Log heatwave warnings specifically for debugging
                         if 'heatwave' in (event or '').lower() or 'heatwave' in filename.lower():
-                            logger.info(f"HEATWAVE DEBUG (CAP) - File: {filename}")
-                            logger.info(f"  Event: '{event}'")
-                            logger.info(f"  Headline: '{headline}'")
-                            logger.info(f"  Areas: {areas}")
-                            logger.info(f"  Affects Townsville: {self.affects_townsville(alert_data)}")
+                            logger.debug(f"Heatwave (CAP) - File: {filename}")
+                            logger.debug(f"  Event: '{event}'")
+                            logger.debug(f"  Headline: '{headline}'")
+                            logger.debug(f"  Areas: {areas}")
+                            logger.debug(f"  Affects Townsville: {self.affects_townsville(alert_data)}")
                         
                         # Only include if it affects Townsville
                         if self.affects_townsville(alert_data):
@@ -258,11 +257,11 @@ class WeatherMonitor:
                     
                     # Log heatwave warnings specifically for debugging
                     if 'heatwave' in (warning_type or '').lower() or 'heatwave' in filename.lower():
-                        logger.info(f"HEATWAVE DEBUG - File: {filename}")
-                        logger.info(f"  Type: '{warning_type}'")
-                        logger.info(f"  Headline: '{headline}'")
-                        logger.info(f"  Areas: '{alert_data['areas']}'")
-                        logger.info(f"  Affects Townsville: {self.affects_townsville(alert_data)}")
+                        logger.debug(f"Heatwave - File: {filename}")
+                        logger.debug(f"  Type: '{warning_type}'")
+                        logger.debug(f"  Headline: '{headline}'")
+                        logger.debug(f"  Areas: '{alert_data['areas']}'")
+                        logger.debug(f"  Affects Townsville: {self.affects_townsville(alert_data)}")
                     
                     # Only include if it affects Townsville
                     if self.affects_townsville(alert_data):
