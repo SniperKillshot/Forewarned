@@ -2,9 +2,23 @@
 
 Forewarned supports manual override switches that allow you to manually activate alert levels regardless of weather or EOC conditions. This is useful for testing, drills, or other manual activations.
 
-## Important: Creating Switches with Unique IDs
+## MQTT vs. No MQTT: Which Entities You Get
 
-**Note:** Switches created via the REST API cannot have unique IDs. To create switches that are manageable through the Home Assistant UI, you must create them manually.
+- **MQTT enabled (recommended):** Forewarned creates and manages the switches for
+  you automatically via MQTT discovery, as `switch.forewarned_manual_advisory`,
+  `switch.forewarned_manual_watch`, `switch.forewarned_manual_warning`, and
+  `switch.forewarned_manual_emergency`. You don't need to create anything - skip
+  to [How It Works](#how-it-works). Toggles also take effect immediately.
+- **MQTT disabled:** Forewarned cannot create a real, toggleable switch through
+  the plain REST API, so you must create `input_boolean` helpers yourself (below).
+  Overrides are picked up on the next periodic check (up to `check_interval`,
+  5 minutes by default) rather than instantly.
+
+The examples below use `input_boolean.*` for the no-MQTT case. If you have MQTT
+enabled, use the `switch.forewarned_manual_*` entities instead in your own
+dashboards/automations.
+
+## Creating the input_boolean Helpers (No MQTT)
 
 ### Method 1: Using Home Assistant UI (Recommended)
 
@@ -13,10 +27,10 @@ Forewarned supports manual override switches that allow you to manually activate
 3. Select **Toggle**
 4. Create each switch with these exact entity IDs:
 
-   - **Entity ID:** `switch.forewarned_manual_advisory` (or `input_boolean.forewarned_manual_advisory`)
-   - **Entity ID:** `switch.forewarned_manual_watch` (or `input_boolean.forewarned_manual_watch`)
-   - **Entity ID:** `switch.forewarned_manual_warning` (or `input_boolean.forewarned_manual_warning`)
-   - **Entity ID:** `switch.forewarned_manual_emergency` (or `input_boolean.forewarned_manual_emergency`)
+   - **Entity ID:** `input_boolean.forewarned_manual_advisory`
+   - **Entity ID:** `input_boolean.forewarned_manual_watch`
+   - **Entity ID:** `input_boolean.forewarned_manual_warning`
+   - **Entity ID:** `input_boolean.forewarned_manual_emergency`
 
 ### Method 2: Using configuration.yaml
 
@@ -221,7 +235,11 @@ sensor:
 
 ## Notes
 
-- Manual overrides are checked on every evaluation cycle (typically every 5 minutes when weather/EOC states update)
+- With MQTT enabled, a manual switch toggle is picked up and evaluated immediately.
+  Without MQTT, overrides are only checked on the next periodic evaluation cycle
+  (typically every 5 minutes, per `check_interval`)
 - If a manual switch is active, automatic alert evaluation is completely bypassed
 - Manual overrides do NOT persist through Home Assistant restarts unless you enable `initial: true` in the input_boolean configuration
-- Clear routines will NOT be triggered when turning off a manual switch - only when the alert state changes from active to inactive
+- Turning off the last active manual switch falls through to automatic evaluation.
+  If that comes back inactive, the clear/all-clear routine (`alert_cleared`) WILL
+  fire, same as any other active-to-inactive transition

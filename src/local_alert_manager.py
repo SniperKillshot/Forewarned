@@ -45,12 +45,16 @@ class LocalAlertManager:
             'emergency': 4
         }
         
-        # Manual override switch entity IDs (using switch domain instead of input_boolean)
+        # Manual override switch entity IDs for the non-MQTT fallback path.
+        # These must be real user-created input_boolean helpers (see
+        # MANUAL_SWITCHES.md) so they can actually be toggled from the HA UI.
+        # When MQTT is enabled, switches are created/managed automatically
+        # instead, as switch.forewarned_manual_* entities via MQTT discovery.
         self.manual_switches = {
-            'advisory': 'switch.forewarned_manual_advisory',
-            'watch': 'switch.forewarned_manual_watch',
-            'warning': 'switch.forewarned_manual_warning',
-            'emergency': 'switch.forewarned_manual_emergency'
+            'advisory': 'input_boolean.forewarned_manual_advisory',
+            'watch': 'input_boolean.forewarned_manual_watch',
+            'warning': 'input_boolean.forewarned_manual_warning',
+            'emergency': 'input_boolean.forewarned_manual_emergency'
         }
         
         # Set up MQTT callback if client is available
@@ -60,13 +64,21 @@ class LocalAlertManager:
     async def handle_manual_switch_change(self, switch_id: str, state: bool):
         """
         Handle manual switch state changes from MQTT
-        
+
         Args:
             switch_id: Switch identifier (e.g., 'manual_advisory')
             state: True for ON, False for OFF
         """
         logger.info(f"Manual switch {switch_id} changed to {'ON' if state else 'OFF'}")
-        # Note: The state will be picked up on the next periodic check via _check_manual_overrides
+
+        # Re-evaluate immediately using the last-known weather/EOC state instead
+        # of waiting for the next periodic check (up to check_interval away) -
+        # a manual override toggle should take effect right away.
+        from src.web_ui import app_state
+        await self.update_and_trigger(
+            app_state.get('weather_alerts', []),
+            app_state.get('eoc_states', {})
+        )
     
     async def initialize_manual_switches(self):
         """Initialize manual override switches via MQTT discovery or HA REST API"""
@@ -124,33 +136,27 @@ class LocalAlertManager:
             logger.info("Manual override switches created via MQTT discovery")
             return
         
-        # Fallback to REST API (temporary switches without unique IDs)
-        logger.warning("MQTT not enabled - creating temporary switches via REST API")
+        # Fallback: MQTT is not enabled, so manual overrides rely on
+        # user-created input_boolean helpers instead (see MANUAL_SWITCHES.md).
+        # We only check for their presence here - we can't create a real,
+        # toggleable input_boolean via the REST states API, so there's no
+        # useful auto-creation step to do.
+        logger.warning("MQTT not enabled - manual overrides require input_boolean helpers (see MANUAL_SWITCHES.md)")
         missing_switches = []
-        
+
         for level, entity_id in self.manual_switches.items():
-            # Check if switch already exists
             state = await self.ha_client.get_state(entity_id)
             if not state:
                 missing_switches.append(entity_id)
-                # Create a temporary state
-                switch_id = f"manual_{level}"
-                config = switch_configs.get(switch_id)
-                if config:
-                    await self.ha_client.set_state(
-                        entity_id,
-                        'off',
-                        {
-                            'friendly_name': config['name'],
-                            'icon': config['icon'],
-                            'note': 'Enable MQTT for persistent switches with unique IDs'
-                        }
-                    )
             else:
                 logger.info(f"Found existing manual switch: {entity_id}")
-        
+
         if missing_switches:
-            logger.warning("Temporary switches created without unique IDs. Enable MQTT for persistent switches.")
+            logger.warning(
+                f"Missing manual override helpers: {', '.join(missing_switches)}. "
+                "Create them via Settings > Devices & Services > Helpers, or in "
+                "configuration.yaml - see MANUAL_SWITCHES.md."
+            )
         else:
             logger.info("All manual override switches found")
     
@@ -162,15 +168,20 @@ class LocalAlertManager:
             Tuple of (level, reason) or (None, None) if no overrides active
         """
         # Check switches in priority order (highest to lowest)
+        mqtt_active = self.mqtt_client and self.mqtt_client.connected
         for level in ['emergency', 'warning', 'watch', 'advisory']:
-            # Try MQTT first if available
-            if self.mqtt_client and self.mqtt_client.connected:
+            # MQTT is authoritative when connected - its switch.forewarned_manual_*
+            # entities are the real ones in this mode, so skip the REST fallback
+            # (which targets the separate input_boolean.* entities used only when
+            # MQTT is unavailable) to avoid redundant HA API calls every cycle.
+            if mqtt_active:
                 switch_id = f"manual_{level}"
                 state = self.mqtt_client.get_state(switch_id)
                 if state:
                     return level, f"Manual override: {level.upper()}"
-            
-            # Fallback to HA REST API
+                continue
+
+            # Fallback to HA REST API (input_boolean helpers)
             entity_id = self.manual_switches.get(level)
             if not entity_id:
                 continue

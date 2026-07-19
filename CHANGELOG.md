@@ -1,5 +1,27 @@
 # Changelog
 
+## [1.0.64] - 2026-07-19
+### Fixed
+- Manual override switches were completely non-functional without MQTT: the
+  code checked `switch.forewarned_manual_*`, but MANUAL_SWITCHES.md instructed
+  users to create `input_boolean.forewarned_manual_*` helpers instead, so the
+  real switch was never seen. The REST-fallback path also used to create its
+  own placeholder `switch.*` state via the raw states API, which isn't backed
+  by any platform and can't be toggled from the HA UI anyway. Now the
+  non-MQTT fallback correctly checks the documented `input_boolean.*` helpers,
+  with no pointless placeholder creation.
+- Manual switch toggles over MQTT now take effect immediately instead of
+  waiting for the next periodic weather/EOC check (up to `check_interval`,
+  5 minutes by default)
+### Changed
+- `_check_manual_overrides()` no longer makes a redundant REST API call to
+  Home Assistant for every alert level when MQTT is already connected
+- Corrected MANUAL_SWITCHES.md: clarified MQTT (`switch.*`, automatic) vs.
+  no-MQTT (`input_boolean.*`, manual setup) entity domains, and fixed an
+  incorrect note claiming clear routines never fire when turning off a
+  manual switch (they do, if that leaves the alert state inactive)
+- Updated hardcoded MQTT discovery `sw_version` (was stale at 1.0.50)
+
 ## [1.0.63] - 2026-07-19
 ### Fixed
 - Config saved via the `/config` web page (routines, alert_rules, etc.) no
