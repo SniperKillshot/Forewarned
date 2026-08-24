@@ -109,8 +109,14 @@ class LocalAlertManager:
         if self.mqtt_client and self.mqtt_client.connected:
             logger.info("Using MQTT discovery to create manual override switches")
             for switch_id, config in switch_configs.items():
-                # Check current state in HA before publishing discovery
-                entity_id = self.manual_switches.get(config['level'])
+                # Check current state in HA before publishing discovery.
+                # This must be the real MQTT-backed switch entity
+                # (switch.forewarned_manual_*), NOT self.manual_switches -
+                # that dict holds the input_boolean.* entities used only by
+                # the non-MQTT REST fallback path, so checking it here always
+                # misses and silently drops the switch back to OFF on every
+                # restart.
+                entity_id = f"switch.forewarned_{switch_id}"
                 current_state = False
                 if entity_id:
                     try:

@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.0.65] - 2026-08-24
+### Fixed
+- Manual override switches were still resetting to OFF on every addon
+  restart when MQTT was enabled. The v1.0.64 fix repointed
+  `self.manual_switches` to the `input_boolean.forewarned_manual_*` entities
+  for the non-MQTT fallback, but `initialize_manual_switches()` also reused
+  that same mapping to check whether a switch was currently ON before
+  restoring it - so with MQTT enabled it was checking an `input_boolean`
+  helper that doesn't exist instead of the real
+  `switch.forewarned_manual_*` entity, always found nothing, and never
+  restored the ON state. Now the MQTT restore check uses the correct
+  `switch.forewarned_manual_*` entity ID.
+
 ## [1.0.64] - 2026-07-19
 ### Fixed
 - Manual override switches were completely non-functional without MQTT: the
