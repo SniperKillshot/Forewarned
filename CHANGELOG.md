@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.0.66] - 2026-08-26
+### Fixed
+- Manual override switches reverted to OFF within seconds of being turned on
+  in Home Assistant, with no trace of it in the addon log. Command-topic
+  subscriptions were only ever set up inside `on_connect`, but
+  `self.switches` is still empty at that point - the switches are only
+  registered afterward, when `initialize_manual_switches()` publishes their
+  MQTT discovery configs. So the addon never subscribed to any
+  `homeassistant/switch/forewarned/*/set` topic, never saw the toggle,
+  never confirmed it, and Home Assistant reverted its optimistic UI state
+  after getting no confirmation. `publish_discovery()` now subscribes to
+  the switch's command topic itself instead of relying on a connect-time
+  pass that always ran too early.
+- The "re-evaluate immediately on manual toggle" path
+  (`handle_manual_switch_change`) silently never ran: `on_message` fires on
+  paho-mqtt's own network thread, which has no asyncio event loop, so
+  `asyncio.create_task()` raised `RuntimeError: no running event loop` and
+  was swallowed by the surrounding `except Exception`. Now scheduled via
+  `asyncio.run_coroutine_threadsafe()` onto the addon's actual event loop
+  (captured at `connect()` time).
+
 ## [1.0.65] - 2026-08-24
 ### Fixed
 - Manual override switches were still resetting to OFF on every addon

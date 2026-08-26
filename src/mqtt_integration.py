@@ -26,6 +26,7 @@ class MQTTIntegration:
         self.connected = False
         self.switches = {}
         self.switch_states = {}
+        self.loop = None
         
     def on_connect(self, client, userdata, flags, rc):
         """Callback when connected to MQTT broker"""
@@ -77,9 +78,17 @@ class MQTTIntegration:
                     state_topic = f"homeassistant/switch/forewarned/{switch_id}/state"
                     client.publish(state_topic, state, retain=True)
                     
-                    # Call state change callback if provided
-                    if self.state_change_callback:
-                        asyncio.create_task(self.state_change_callback(switch_id, state == 'ON'))
+                    # Call state change callback if provided. on_message runs
+                    # on paho-mqtt's own network thread (from loop_start()),
+                    # which has no asyncio event loop of its own, so
+                    # asyncio.create_task() here would raise "no running
+                    # event loop" and get silently swallowed below -
+                    # schedule it on the addon's actual event loop instead.
+                    if self.state_change_callback and self.loop:
+                        asyncio.run_coroutine_threadsafe(
+                            self.state_change_callback(switch_id, state == 'ON'),
+                            self.loop
+                        )
                         
         except Exception as e:
             logger.error(f"Error processing MQTT message: {e}")
@@ -90,8 +99,13 @@ class MQTTIntegration:
         if self.client is not None:
             logger.warning("MQTT client already exists - skipping duplicate connection")
             return self.connected
-            
+
         try:
+            # Capture the running event loop so on_message (called from
+            # paho-mqtt's own network thread) can schedule coroutines back
+            # onto it via run_coroutine_threadsafe.
+            self.loop = asyncio.get_running_loop()
+
             broker = self.config.get('broker', 'core-mosquitto')
             port = self.config.get('port', 1883)
             username = self.config.get('username', '')
@@ -179,7 +193,7 @@ class MQTTIntegration:
                     "name": "Forewarned",
                     "model": "Weather & EOC Alert System",
                     "manufacturer": "Forewarned",
-                    "sw_version": "1.0.65"
+                    "sw_version": "1.0.66"
                 }
             }
             
@@ -198,6 +212,16 @@ class MQTTIntegration:
                     'command_topic': command_topic,
                     'state_topic': state_topic
                 }
+
+                # Subscribe now, not just on the next on_connect - discovery
+                # always runs after the initial connection (see
+                # initialize_manual_switches), so self.switches is still
+                # empty when on_connect does its subscribe pass, and this
+                # switch's command topic would otherwise never be listened
+                # to. Without this, toggling the switch in HA never reaches
+                # on_message, so it's never confirmed and HA's UI reverts it.
+                self.client.subscribe(command_topic)
+                logger.debug(f"Subscribed to {command_topic}")
 
                 # Do NOT force an initial retained OFF state on discovery.
                 # Publishing a retained OFF here can overwrite a user's existing
